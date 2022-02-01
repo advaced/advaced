@@ -1,6 +1,6 @@
 # Concept
 This is the concept of the Advaced protocol or the shortcut VAC.
-It is based on the bitcoin whitepaper and the proof-of-stake (PoS) concept.
+It is based on the [bitcoin whitepaper](https://bitcoin.org/bitcoin.pdf) and the [proof-of-stake (PoS)](https://en.wikipedia.org/wiki/Proof_of_stake) protocol.
 
 ## Structure
 The concept is based on these 6 parts:

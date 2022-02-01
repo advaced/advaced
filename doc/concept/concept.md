@@ -7,9 +7,9 @@ The concept is based on these 6 parts:
 
 - [Blockchain](./blockchain.md)
 - [Transactions](./transactions.md)
-- [Proof-of-stake (PoS)](./proof-of-stake.md)
-- [Network](./network.md)
 - [Privacy](./privacy.md)
+- [Network](./network.md)
+- [Proof-of-stake (PoS)](./proof-of-stake.md)
 - [Vulnerabilities](./vulnerabilities.md)
 
 ## Abstract

@@ -1,6 +1,6 @@
 # Proof-of-stake (PoS)
-Proof of stake is a type of [consensus mechanism]() used by decentralized networks to achieve distributed consensus.
-Unlike [proof-of-work]() a miner is not in need of verifying a block with energy and hardware ressources, but to verify it with a stake of VAC. 
+Proof of stake is a type of [consensus mechanism](https://en.wikipedia.org/wiki/Consensus_(computer_science)) used by decentralized networks to achieve distributed consensus.
+Unlike [proof-of-work](https://en.wikipedia.org/wiki/Proof_of_stake) a miner is not in need of verifying a block with energy and hardware ressources, but to verify it with a stake of VAC. 
 A minimum of 64 Advaced is required to become a validator.
 
 As miners in proof-of-work validators are responsible for the creation of new blocks and the ordering of transactions so that every node in the network can agree on the current state of it.

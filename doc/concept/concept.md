@@ -13,3 +13,10 @@ The concept is based on these 5 parts:
 
 ## Abstract
 Advaced is an electronic cash-system as a decentralized chain based on digital signatures and a validation process.
+Every block in the chain is created and validated by the nodes in the network. 
+The validator is (pseudo) randomly selected by the network and validates the block with the proof-of-stake consensus mechanism. 
+A validator needs at least 64 staked VAC to become one.
+To create an incentive every time a block is created the validator gets a reward for it.
+
+No trusted third party is needed to make a transaction.
+It is environmental friendly as it does not need as much energy and hardware to run it as in the proof-of-work consensus.

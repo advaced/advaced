@@ -1,0 +1,18 @@
+# This is the most important EditorConfig file
+root = true
+
+# For all files
+[*]
+charset = utf-8
+end_of_line = lf
+indent_style = space
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+# Source code files
+[*.{py,sh,bat}]
+indent_size = 4
+
+# Makefiles and batch files
+[*.am]
+indent_style = tab

@@ -3,6 +3,17 @@ Here is a list of the things we are currently working on.
 
 ## Alpha - 1.0.0
 - [x] Add the Advaced concept
+- [ ] Add modules documentation
+  - [ ] Add modules summary
+  - [ ] Add accounts documentation
+  - [ ] Add block documentation
+  - [ ] Add blockchain documentation
+  - [ ] Add consensus documentation
+  - [ ] Add console documentation
+  - [ ] Add log documentation
+  - [ ] Add node documentation
+  - [ ] Add peer-2-peer documentation
+  - [ ] Add validator documentation
 - [ ] Create a working network that consists of nodes
 - [ ] Add a transaction process
 - [ ] Create a working blockchain

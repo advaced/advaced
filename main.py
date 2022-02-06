@@ -1,6 +1,13 @@
+# Fetch the used arguments
 from sys import argv
 
+# Command-handling
+from cmd.input import handle_input
+
+
 def main():
+    # Take care of the input
+    handle_input(argv)
     return
 
 

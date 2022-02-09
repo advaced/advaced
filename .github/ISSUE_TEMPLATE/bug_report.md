@@ -1,5 +1,3 @@
-# Issue template for bugs
-
 ---
 name: Bug report
 about: Create a report to help us improve the Advaced protocol

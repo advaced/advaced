@@ -10,7 +10,8 @@ from __init__ import __version__
 
 
 def build() -> int:
-    """Sets the project files up and copies them into the program/library directory of the operating system (linux: `/usr/lib/`, windows: `C:\Program Files\`).
+    """Sets the project files up and copies them into the program/library directory of
+       the operating system (linux: `/usr/lib/`, windows: `C:\Program Files\`).
 
     :returns: The state of success from the process
     :rtype: bool

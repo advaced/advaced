@@ -49,7 +49,8 @@ def build() -> int:
             shell_file.writelines(['#!/usr/bin/sh\n', f'python "/usr/lib/advaced/{__version__}/"'])
 
         # Set the needed permission
-        chmod('/usr/bin/advaced', S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IWGRP | S_IXGRP | S_IROTH | S_IWOTH | S_IXOTH)
+        chmod('/usr/bin/advaced',
+             S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IWGRP | S_IXGRP | S_IROTH | S_IWOTH | S_IXOTH)
 
     except OSError as error:
         # Logging for development

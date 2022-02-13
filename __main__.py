@@ -2,7 +2,7 @@
 from sys import argv, path
 
 # Command-handling
-from cmd.input import handle_input
+from cmd import handle_input
 
 
 def main():

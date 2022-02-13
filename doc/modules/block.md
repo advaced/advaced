@@ -17,8 +17,6 @@
 
 
 ## Transaction
-- `index` (integer): The index of the transaction in the block (from 1 to 2048).
-
 - `block_index` (integer): The index of the block, where the transaction is in.
 
 - `sender` (ECDSA public-key): The public-key of the sender.

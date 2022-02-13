@@ -6,8 +6,8 @@ from datetime import datetime
 
 class Transaction:
     def __init__(self, sender, recipient, amount, fee=None, tx_type='tx', signature=None):
-        """Set the transaction-values up
-.
+        """Set the transaction-values up.
+
         :param sender: The public-key of the sender.
         :type sender: str (hex-digest)
         :param recipient: The public-key of the recipient.

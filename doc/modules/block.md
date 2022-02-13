@@ -21,9 +21,9 @@
 
 - `recipient` (ECDSA public-key): The public-key of the recipient.
 
-- `value` (integer with 18 decimal places): The amount of coins that the sender sends.
+- `amount` (integer with 18 decimal places): The amount of coins that the sender transacts.
 
-- `fee` (integer): The transaction-fee that is added to the incentive for the validators. There is always a minimum fee that is required to get into a block. Everything above is a tip and your transaction might be picked earlier the higher your fee is.
+- `fee` (integer): The transaction-fee, that is added to the incentive for the validators. There is always a minimum fee that is required to get into a block. Everything above is a tip and your transaction might be picked earlier the higher your fee is.
 
 - `type` (string): There are three types of transactions:
   - `tx`: A normal transaction (also normal transaction-fee).
@@ -36,4 +36,4 @@
 
 - `hash` (hex-digest (SHA256)): The hash of the information of the transaction.
 
-- `signature` (ECDSA key-signature): Signed hash with the private-key of the sender (or in some cases the recipient).
+- `signature` (ECDSA key-signature): Signed hash with the private-key of the sender (or in some cases with the private-key of the recipient).

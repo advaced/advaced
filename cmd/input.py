@@ -1,4 +1,4 @@
-def input(arguments: list):
+def handle_input(arguments: list):
     '''Handle the input and all its arguments
 
     :param arguments: The given arguments when the command was executed

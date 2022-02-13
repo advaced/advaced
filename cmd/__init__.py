@@ -1,3 +1,3 @@
-from .input import input
+from .input import handle_input
 
-__all__ =[ 'input' ]
+__all__ =[ 'handle_input' ]

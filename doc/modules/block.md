@@ -17,8 +17,6 @@
 
 
 ## Transaction
-- `timestamp` (string): A Timestamp generated with `str(datetime.now())`, e.g. `2022-02-09 08:02:19.766484`.
-
 - `sender` (ECDSA public-key): The public-key of the sender.
 
 - `recipient` (ECDSA public-key): The public-key of the recipient.
@@ -33,6 +31,8 @@
   - `stake`: Stakes coins to the recipient account (The recipient can't use these coins for transactions and the transaction-fee is only as half as high as the normal).
 
   - `unstake`: Unstakes the given value, but in this case the current stake-holding account is the sender and the recipient is the one, who staked these coins earlier to this account. Also the signature are is in this case made with the recipient private-key (the transaction-fee is only as half as high as the normal).
+
+- `timestamp` (string): A Timestamp generated with `str(datetime.now())`, e.g. `2022-02-09 08:02:19.766484`.
 
 - `hash` (hex-digest (SHA256)): The hash of the information of the transaction.
 

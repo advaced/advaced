@@ -17,7 +17,7 @@
 
 
 ## Transaction
-- `block_index` (integer): The index of the block, where the transaction is in.
+- `timestamp` (string): A Timestamp generated with `str(datetime.now())`, e.g. `2022-02-09 08:02:19.766484`.
 
 - `sender` (ECDSA public-key): The public-key of the sender.
 

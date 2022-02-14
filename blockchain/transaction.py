@@ -37,9 +37,21 @@ class Transaction:
         self.timestamp = datetime.now()
 
 
-    def calculate_hash(self):
+    @property
+    def hash(self) -> str:
         """Calculates the hash of the transaction with the SHA256 hash-algorithm.
 
         :return: Hex-digest of transaction-hash
         """
         return sha256((self.sender + self.recipient + str(self.amount) + str(self.fee) + self.type + str(self.timestamp)).encode()).hexdigest()
+
+
+    def sign_tx(self, key) -> str:
+        """Signs the transaction with the private-key of the keypair (in most cases the private-key of the sender)
+
+        :param key: The private-key of the sender (in some cases the key of the recipient)
+        :type: str
+
+        :return: Signature of the transaction-hash and private-key
+        """
+        return ''

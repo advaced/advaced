@@ -32,7 +32,9 @@
 
   - `stake`: Stakes coins to the recipient account (The recipient can't use these coins for transactions and the transaction-fee is only as half as high as the normal).
 
-  - `unstake`: Unstakes the given value, but in this case the current stake-holding account is the sender and the recipient is the one, who staked these coins earlier to this account. Also the signature are is in this case made with the recipient private-key (the transaction-fee is only as half as high as the normal).
+  - `claim`: Claims the given value, but in this case the current stake-holding account is the sender and the recipient is the one, who staked these coins earlier to this account or claims the coins that the person earned with his/her validation. Also the signature are is in this case made with the recipient private-key (the transaction-fee is only as half as high as the normal).
+
+  - `burn`: Removes the senders stake and adds it to the recipients value (the recipient is the validator of the current block and the validator can not be the sender)
 
 - `timestamp` (string): A Timestamp generated with `str(datetime.now())`, e.g. `2022-02-09 08:02:19.766484`.
 

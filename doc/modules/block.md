@@ -1,6 +1,8 @@
 # Block
 - `index` (integer): The index of the block wich is created with `previous_block['index'] + 1`.
 
+- `version` (string): The version of the code, that created the block, so the code is changable after the first release.
+
 - `timestamp` (string): A Timestamp generated with `str(datetime.now())`, e.g. `2022-02-09 08:02:19.766484`.
 
 - `base_fee` (int): To be included into the block, this minimum fee is required for a transaction.

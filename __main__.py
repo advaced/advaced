@@ -1,5 +1,5 @@
 # Fetch the used arguments
-from sys import argv, path
+from sys import argv
 
 # Command-handling
 from cmd import handle_input

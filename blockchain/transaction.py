@@ -43,6 +43,7 @@ class Transaction:
         """Calculates the hash of the transaction with the SHA256 hash-algorithm.
 
         :return: Hex-digest of transaction-hash
+        :rtype: str (hex-digest)
         """
         return sha256((self.sender + self.recipient + str(self.amount) + str(self.fee) + self.type + str(self.timestamp)).encode()).hexdigest()
 
@@ -54,15 +55,18 @@ class Transaction:
         :type key: str
 
         :return: Signature of the transaction-hash and private-key
+        :rtype: str
         """
-        return ''
+        return '' # TODO -> Add transaction signature-feature
 
 
-    def to_json(self):
-        """For data transportation/storing purposes, a json-format is created
+    def to_dict(self) -> dict:
+        """Create dictionary format of the transaction
 
+        :return: Transaction in dict-format
+        :rtype: dict
         """
-        tx_dict = {
+        return {
             'sender': self.sender,
             'recipient': self.recipient,
             'amount': self.amount,
@@ -72,8 +76,44 @@ class Transaction:
             'hash': self.hash,
             'signature': self.signature
         }
+    
+    def from_dict(self, dict_data) -> bool:
+        """Create transaction from dict-data
 
-        return json.dumps(tx_dict)
+        :param dict_data: Dictionary that includes the transaction-values
+        :type dict_data: str
+
+        :return: A status wether the data-load was successful or not
+        :rtype: bool
+        """
+        try:
+            # Set the data to the transaction
+            self.sender = dict_data['sender']
+            self.recipient = dict_data['recipient']
+            self.amount = dict_data['amount']
+            self.fee = dict_data['fee']
+            self.type = dict_data['type']
+
+            # Check if the signature is included in the dict-data
+            if dict_data['signature']:
+                self.signature = dict_data['signature']
+
+            self.timestamp = datetime.strptime(dict_data['timestamp'], '%Y-%m-%d %H:%M:%S.%f')
+
+        # Return the status
+        except:
+            return False
+
+        return True
+
+
+    def to_json(self) -> str:
+        """For data transportation/storing purposes, a json-format is created
+
+        :return: Transaction in json-format
+        :rtype: str (stringified json)
+        """
+        return json.dumps(self.to_dict())
 
 
     def from_json(self, json_data) -> bool:
@@ -101,11 +141,10 @@ class Transaction:
             if dict_data['signature']:
                 self.signature = dict_data['signature']
 
-            self.timestamp = dict_data['timestamp']
+            self.timestamp = datetime.strptime(dict_data['timestamp'], '%d-%m-%y %H:%M:%S')
 
         # Return the status
         except KeyError:
-
             return False
 
         return True

@@ -46,7 +46,7 @@ def build() -> int:
     try:
         # Create bash file to run
         with open('/usr/bin/advaced', 'a') as shell_file:
-            shell_file.writelines(['#!/usr/bin/sh\n', f'python "/usr/lib/advaced/{__version__}/"'])
+            shell_file.writelines(['#!/usr/bin/sh\n', f'python3 "/usr/lib/advaced/{__version__}/"'])
 
         # Set the needed permission
         chmod('/usr/bin/advaced',

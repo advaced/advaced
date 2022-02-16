@@ -76,7 +76,8 @@ class Transaction:
             'hash': self.hash,
             'signature': self.signature
         }
-    
+
+
     def from_dict(self, dict_data) -> bool:
         """Create transaction from dict-data
 

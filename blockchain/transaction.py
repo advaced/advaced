@@ -1,5 +1,5 @@
-# SHA256 hash-algorithm
-from hashlib import sha256
+# SHA3-512 hash-algorithm
+from hashlib import sha3_512
 
 from datetime import datetime
 import json
@@ -40,12 +40,12 @@ class Transaction:
 
     @property
     def hash(self) -> str:
-        """Calculates the hash of the transaction with the SHA256 hash-algorithm.
+        """Calculates the hash of the transaction with the SHA3-512 hash-algorithm.
 
         :return: Hex-digest of transaction-hash
         :rtype: str (hex-digest)
         """
-        return sha256((self.sender + self.recipient + str(self.amount) + str(self.fee) + self.type + str(self.timestamp)).encode()).hexdigest()
+        return sha3_512((self.sender + self.recipient + str(self.amount) + str(self.fee) + self.type + str(self.timestamp)).encode()).hexdigest()
 
 
     def sign_tx(self, key) -> str:

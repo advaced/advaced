@@ -1,8 +1,16 @@
-# SHA3-512 hash-algorithm
-from hashlib import sha3_512
+# SHA3-256 hash-algorithm
+from hashlib import sha3_256
 
 from datetime import datetime
 import json
+
+# Add to path
+from sys import path
+import os
+path.insert(0, os.path.join(os.getcwd(), '../'))
+
+# Wallet
+from accounts import Wallet
 
 
 class Transaction:
@@ -40,24 +48,100 @@ class Transaction:
 
     @property
     def hash(self) -> str:
-        """Calculates the hash of the transaction with the SHA3-512 hash-algorithm.
+        """Calculates the hash of the transaction with the SHA3-256 hash-algorithm.
 
         :return: Hex-digest of transaction-hash
         :rtype: str (hex-digest)
         """
-        return sha3_512((self.sender + self.recipient + str(self.amount) + str(self.fee) + self.type + str(self.timestamp)).encode()).hexdigest()
+        return sha3_256((self.sender + self.recipient + str(self.amount) + str(self.fee) + \
+               self.type + str(self.timestamp)).encode()).hexdigest()
 
 
-    def sign_tx(self, key) -> str:
+    def sign_tx(self, private_key):
         """Signs the transaction with the private-key of the keypair (in most cases the private-key of the sender)
 
-        :param key: The private-key of the sender (in some cases the key of the recipient)
-        :type key: str
+        :param private_key: The private-key of the sender (in some cases the key of the recipient)
+        :type private_key: str
 
-        :return: Signature of the transaction-hash and private-key
-        :rtype: str
+        :return: Status whether the signature-process worked or not.
+        :rtype: bool
         """
-        return '' # TODO -> Add transaction signature-feature
+
+        # Fetch the paired public-key
+        public_key = Wallet.get_public_key(private_key)
+
+        # Check if private-key is valid
+        if not public_key:
+            return False
+
+        # Check if public-key is either the senders or the recipients key
+        if (not self.sender == public_key and not self.type == 'tx' and not self.type == 'stake' \
+            and not self.type == 'unstake' and not self.type == 'claim') or (not self.recipient == public_key \
+            and not self.type == 'burn'):
+            return False
+
+        # Set signature
+        self.signature = Wallet.sign_data(private_key, self.hash)
+
+        # Check if the signature worked
+        if not self.signature:
+            # Reset the signature
+            self.signature = None
+
+            return False
+
+        return True
+
+
+    def is_valid(self, blockchain, in_chain=False) -> bool:
+        """Check if transactions-signature is valid.
+
+        :param blockchain: The blockchain where the transaction should go in.
+        :type blockchain: :py:class:`blockchain.Blockchain`
+        :param in_chain: Wether the trabsaction is already included or not.
+        :type in_chain: bool
+
+        :return: Validity of transaction and its signature.
+        :rtype: bool
+        """
+
+        # Check if numbers are negative or zero
+        if self.amount < 0 or self.fee <= 0:
+            return False
+
+        # Check if transaction is parsed
+        if not self.signature:
+            return False
+
+        # Set the verifying-key for signature-validity check
+        verifying_key = self.sender
+
+        if self.type == 'burn':
+            verifying_key = self.recipient
+
+        # Check if the transaction type is wrong
+        if not self.type == 'tx' and not self.type == 'stake' and not self.type == 'unstake' \
+           and not self.type == 'claim':
+            return False
+
+        # Check if the signature is valid
+        if not Wallet.valid_signature(verifying_key, self.signature, self.hash):
+            return False
+
+        # Check if transaction is signed for the future
+        if self.timestamp > datetime.now():
+            return False
+
+        # Only for not in-chain transactions
+        if not in_chain:
+            # Check if transaction is already in the chain if it should not be
+            if blockchain.tx_included(self):
+                return False
+
+            # TODO -> Check wether the sender (if its a tx or stake) can afford it
+            #         (or at unstake if the sender has enough stake or at burn if the burning is allowed)
+
+        return True
 
 
     def to_dict(self) -> dict:

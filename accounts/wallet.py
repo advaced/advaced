@@ -2,7 +2,7 @@ from ecdsa import SigningKey, VerifyingKey, SECP256k1
 from hashlib import sha3_512
 
 class Wallet:
-    def __init__(self, name=None, public_key=None, private_key=None):
+    def __init__(self, name=None, public_key: VerifyingKey=None, private_key: SigningKey=None):
         self.name = name if name else 'Account'
 
         # Create wallet keypair (with ecdsa, the SECP256k1 curve and sha3-512 as hash-algorithm)
@@ -41,7 +41,7 @@ class Wallet:
 
 
     @staticmethod
-    def is_valid_signature(public_key: str, signature: str, data: str) -> bool:
+    def valid_signature(public_key: str, signature: str, data: str) -> bool:
         """Verify signature with the public_key.
 
         :param public_key: Public-key of the wallet.
@@ -66,7 +66,26 @@ class Wallet:
 
 
     @staticmethod
-    def keypair_valid(public_key: str, private_key: str) -> bool:
+    def get_public_key(private_key: str):
+        """Returns the public-key of the parsed private-key.
+
+        :param private_key: Private-key of the wallet.
+        :type private_key: str (hex-digest)
+
+        :return: Public-key or false whether the private-key is right or not.
+        :rtype: str | bool
+        """
+        try:
+            # Fetch private-key from hex-string and return public-key
+            return SigningKey.from_string(bytes.fromhex(private_key), curve=SECP256k1, hashfunc=sha3_512).get_verifying_key().to_string().hex()
+
+        # Occurres if private-key is false
+        except:
+            return False
+
+
+    @classmethod
+    def keypair_valid(cls, public_key: str, private_key: str) -> bool:
         """Tests whether the keys are matching or not.
 
         :param public_key: Public-key from key-pair.
@@ -77,16 +96,13 @@ class Wallet:
         :return: The result wether the keys are matching or not.
         :rtype: bool
         """
-        try:
-            # Fetch private-key from hex-string
-            secret = SigningKey.from_string(bytes.fromhex(private_key), curve=SECP256k1, hashfunc=sha3_512)
 
-            # Check if public-key is valid
-            if not secret.get_verifying_key().to_string().hex() == public_key:
-                return False
+        # Fetch private-key from hex-string
+        verifying_key = cls.get_public_key(private_key)
 
-            return True
-
-        # Ouccurres when the private-key can not be fetched
-        except:
+        # Check if public-key is valid
+        if not verifying_key == public_key:
             return False
+
+        return True
+

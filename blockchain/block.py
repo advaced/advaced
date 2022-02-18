@@ -1,5 +1,5 @@
 # SHA256 hash-algorithm
-from hashlib import sha256
+from hashlib import sha3_256
 
 from datetime import datetime
 import json
@@ -7,7 +7,6 @@ import json
 # Add to path
 from sys import path
 import os
-from wsgiref.validate import validator
 path.insert(0, os.path.join(os.getcwd(), '../'))
 
 # Project version
@@ -15,10 +14,12 @@ from __init__ import __version__
 
 # Blockchain-classes
 from blockchain import Transaction
-# from blockchain import Blockchain
+
+# Wallet
+from accounts import Wallet
 
 class Block:
-    def __init__(self, transactions=[], validator=None, signature=None, previous_block=None):
+    def __init__(self, transactions=[], previous_block=None, validator=None, signature=None):
         """Set the block-values up.
 
         :param transactions: All transactions included into the block.
@@ -57,10 +58,11 @@ class Block:
         self.signature = signature
 
     @property
-    def tx_json(self) -> list:
-        """Creates json-version of the included transactions
+    def tx_dict(self) -> list:
+        """Creates dictionary-list version of the included transactions.
 
-        :return: str (stringified json)
+        :return: List of all transactions in dictionary-format.
+        :rtype: list (contains dictionaries)
         """
 
         # Add all transactions in json-format to a list
@@ -72,29 +74,130 @@ class Block:
 
     @property
     def hash(self) -> str:
-        """Calculates the hash of the block with the SHA256 hash-algorithm.
+        """Calculates the hash of the block with the SHA3_256 hash-algorithm.
 
         :return: Hex-digest of transaction-hash
         :rtype: str (hex-digest)
         """
 
-        # Check if the block contains are important values
-        if not self.validator or not self.signature:
+        # Check if the block contains an important value
+        if not self.validator:
             # Development logs
-            print("WARNING!: Block incomplete, hash could be not right!")
+            print("WARNING!: Block incomplete, hash is not completely right!")
 
-        return sha256((str(self.index) + self.version + str(self.timestamp) + str(self.base_fee) + str(self.tx_json) + self.validator if self.validator else "" + self.signature if self.signature else "").encode()).hexdigest()
+        return sha3_256((str(self.index) + self.version + str(self.timestamp) + str(self.base_fee) + str(self.tx_dict) \
+                       + self.validator if self.validator else "").encode()).hexdigest()
 
 
-    def sign_block(self, key) -> str:
-        """Signs the block with the private-key of the validators keypair
+    def sign_block(self, private_key):
+        """Signs the block with the private-key of the validators keypair (The validator must be set).
 
         :param key: The private-key of the validator
         :type key: str
 
-        :return: Signature of the block-hash and private-key
+        :return: Status whether the signature-process worked or not.
+        :rtype: bool
         """
-        return '' # TODO -> Add block signature-feature
+        # Fetch the paired public-key
+        public_key = Wallet.get_public_key(private_key)
+
+        # Check if private-key is valid
+        if not public_key:
+            return False
+
+        # Check if the public-key belongs to the validator
+        if not self.validator == public_key:
+            return False
+
+        # Set signature
+        self.signature = Wallet.sign_data(private_key, self.hash)
+
+        # Check if the signature worked
+        if not self.signature:
+            # Reset the signature
+            self.signature = None
+
+            return False
+
+        return True
+
+
+    def is_valid(self, blockchain, in_chain=False):
+        """Check if the block is valid.
+
+        :param blockchain: The blockchain where the block is in or should go in.
+        :type blockchain: :py:class:`blockchain.Blockchain`
+        :param in_chain: Wether the block is already included or not.
+        :type in_chain: bool
+
+        :return: Validity of block.
+        :rtype: bool
+        """
+
+        # Check if index is equal to 1
+        if self.index == 1:
+            return True
+
+        # Fetch the previous block
+        if in_chain:
+            previous_block = blockchain.fetch_block(self.index -1)
+
+        else:
+            previous_block = blockchain.last_blocks[0]
+
+        # Check if they could fetch the previous-block
+        if previous_block:
+            # Check if the previous hash matches with the previous blocks hash
+            if not self.previous_hash == previous_block.hash:
+                return False
+
+            # Compare the timestamps
+            if self.timestamp < previous_block.timestamp:
+                # Previous block was generated after current block
+                return False
+
+        # Check version
+        if not self.version == blockchain.version: # TODO -> Add versionstamp checks, not only for current version
+            return False
+
+        # Check timestamp
+        if self.timestamp > datetime.now():
+            # Block is from the future
+            return False
+
+        # TODO -> Add base-fee checker
+
+        # Check if transactions are valid
+        for transaction in self.tx:
+            if not transaction.is_valid(blockchain, in_chain):
+                return False
+
+        # Check if validators signature is valid
+        if not Wallet.valid_signature(self.validator, self.signature, self.hash):
+            return False
+
+        # TODO -> Add stake check (if the validator has staked enough to validate a block)
+
+        return True
+
+
+    def to_dict(self) -> dict:
+        """Creates dictionary from block-information.
+
+        :return: Block in dict-format
+        :rtype: dict
+        """
+        return {
+            'index': self.index,
+            'version': self.version,
+            'base_fee': self.base_fee,
+            'tx': self.tx_dict,
+            'timestamp': str(self.timestamp),
+            'previous_hash': self.previous_hash,
+            'hash': self.hash,
+            'validator': self.validator,
+            'signature': self.signature
+        }
 
 
     def to_json(self):
@@ -103,19 +206,7 @@ class Block:
         :return: Block in json-format
         :rtype: str (stringified json)
         """
-        block_dict = {
-            'index': self.index,
-            'version': self.version,
-            'base_fee': self.base_fee,
-            'tx': self.tx_json,
-            'timestamp': str(self.timestamp),
-            'previous_hash': self.previous_hash,
-            'hash': self.hash,
-            'validator': self.validator,
-            'signature': self.signature
-        }
-
-        return json.dumps(block_dict)
+        return json.dumps(self.to_dict())
 
 
     def from_tx_dict(self, tx_dict) -> bool:
@@ -133,7 +224,6 @@ class Block:
         for tx in tx_dict:
             # Set transaction class up
             new_tx = Transaction("", "", 0)
-            print(tx)
             success = new_tx.from_dict(tx)
 
             # Check if something did not seem to work
@@ -142,7 +232,6 @@ class Block:
 
             # Add to list
             tx_list.append(new_tx)
-            print(tx_list)
 
         # Parse the list
         self.tx = tx_list

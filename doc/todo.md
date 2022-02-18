@@ -17,9 +17,9 @@ Here is a list of the things we are currently working on.
 - [ ] Create a working network that consists of nodes
 - [x] Add a transaction process
 - [x] Add a wallet-system
-- [ ] Create a working blockchain
+- [x] Create a working blockchain
   - [x] Add a block
-  - [ ] Add a chain
+  - [x] Add a chain
 - [ ] Add a validation process (proof-of-stake)
   - [ ] Add coin-staking
   - [ ] Add validator selection

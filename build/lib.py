@@ -1,11 +1,8 @@
 # Modules for directory-copying
-from os import path, getcwd, rmdir, chmod
+from os import path, getcwd, rmdir
 from shutil import rmtree, copytree, Error as shutil_error
 
-# Permissions
-from stat import S_IRUSR, S_IWUSR, S_IXUSR, S_IRGRP, S_IWGRP, S_IXGRP, S_IROTH, S_IWOTH, S_IXOTH
-
-# Version util
+# Project version
 from __init__ import __version__
 
 
@@ -52,10 +49,6 @@ def build() -> int:
     # Try to copy the source into destination
     try:
         copytree(source, destination)
-
-        # Set needed permissions
-        chmod(f'/usr/lib/advaced/', S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IWGRP | S_IXGRP | S_IROTH | S_IWOTH | S_IXOTH)
-        chmod(f'/usr/lib/advaced/{__version__}', S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IWGRP | S_IXGRP | S_IROTH | S_IWOTH | S_IXOTH)
 
     except shutil_error:
         # Raise the error

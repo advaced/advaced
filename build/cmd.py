@@ -1,10 +1,7 @@
 # File remover
-from os import path, remove, chmod
+from os import path, remove, getcwd
 
-# Permissions
-from stat import S_IRUSR, S_IWUSR, S_IXUSR, S_IRGRP, S_IWGRP, S_IXGRP, S_IROTH, S_IWOTH, S_IXOTH
-
-# Version
+# Project version
 from __init__ import __version__
 
 
@@ -46,11 +43,7 @@ def build() -> int:
     try:
         # Create bash file to run
         with open('/usr/bin/advaced', 'a') as shell_file:
-            shell_file.writelines(['#!/usr/bin/sh\n', f'python3 "/usr/lib/advaced/{__version__}/"'])
-
-        # Set the needed permission
-        chmod('/usr/bin/advaced',
-             S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IWGRP | S_IXGRP | S_IROTH | S_IWOTH | S_IXOTH)
+            shell_file.writelines(['#!/usr/bin/sh\n', f'python3 "/usr/lib/advaced/{__version__}/" $@'])
 
     except OSError as error:
         # Logging for development

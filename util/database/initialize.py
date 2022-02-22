@@ -1,11 +1,11 @@
 from os.path import exists, join
-from os import remove
+from os import remove, getcwd
 from sys import path
 
 # SQLite connector
 from sqlite3 import connect
 
-DATABASE_FILE = join(path[0], 'db.db')
+DATABASE_FILE = '/usr/lib/advaced/database/db.db'
 
 
 def create_tables(cursor):
@@ -18,38 +18,49 @@ def create_tables(cursor):
     :rtype: bool
     """
 
+    # Read the sql-script
+    with open(join(getcwd(), 'sql/db.sql')) as sql_file:
+        sql_script = sql_file.read()
 
-    pass
+    # Execute the script
+    cursor.executescript(sql_script)
 
 
-def create_database():
+
+def create_database(overwrite=False):
     """Create the database-file and add the required tables
+
+    :param overwrite: Says if file should be overwritten or not.
+    :param overwrite: bool
 
     :return: Status code wether creation was successful
     :rtype: bool
     """
 
     # Check if the database already exists
-    if exists(DATABASE_FILE):
+    if exists(DATABASE_FILE) and not overwrite:
         # Dev log
         print(f'already exists: {DATABASE_FILE}')
 
         return False
 
-    try:
-        # Create the file
-        connection = connect(DATABASE_FILE)
-        cursor = connection.cursor()
+    # try:
+    # Create the file
+    connection = connect(DATABASE_FILE)
+    cursor = connection.cursor()
 
-        # Create the tables
-        create_tables(cursor)
+    # Create the tables
+    create_tables(cursor)
 
-        # Commit and close connection
-        connection.commit()
-        cursor.close()
-        connection.close()
+    # Commit and close connection
+    connection.commit()
+    cursor.close()
+    connection.close()
 
-    except:
-        return False
+    # except:
+    #     print('schade')
+    #     return False
 
     return True
+
+create_database(True)

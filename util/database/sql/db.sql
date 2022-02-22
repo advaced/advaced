@@ -1,6 +1,6 @@
 -- Blockchain-storage v1.0.0
 CREATE TABLE blockchain_v1_0_0 (
-    index INT(32) NOT NULL,
+    block_index INT(32) NOT NULL,
     previous_hash VARCHAR(64) NOT NULL,
 
     version VARCHAR(5) NOT NULL,

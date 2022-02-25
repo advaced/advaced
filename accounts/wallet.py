@@ -106,3 +106,42 @@ class Wallet:
 
         return True
 
+
+    @staticmethod
+    def coins(public_key: str) -> float:
+        """Returns the amount of coins the wallet owns.
+
+        :param public_key: Public-key of the wallet.
+        :type public_key: str
+
+        :return: Amount of coins in the wallet.
+        :rtype: float
+        """
+        pass
+
+
+    @staticmethod
+    def stake(public_key: str) -> float:
+        """Returns the coins that the wallet has staked.
+
+        :param public_key: Public-key of the wallet.
+        :type public_key: str
+
+        :return: Amount of staked coins of the wallet.
+        :rtype: float
+        """
+        pass
+
+
+    @staticmethod
+    def score(public_key: str) -> float:
+        """Returns the staking worth of the wallet.
+
+        :param public_key: Public-key of the wallet.
+        :type public_key: str
+
+        :return: Staking score (the higher the score the higher is the probability of
+                 getting chosen to verify a block).
+        :rtype: float
+        """
+        pass

@@ -1,10 +1,11 @@
+# Add path
 from os.path import exists, join
 from os import remove, getcwd
-from sys import path
 
 # SQLite connector
 from sqlite3 import connect
 
+# Database path
 DATABASE_FILE = '/usr/lib/advaced/database/db.db'
 
 
@@ -19,7 +20,7 @@ def create_tables(cursor):
     """
 
     # Read the sql-script
-    with open(join(getcwd(), 'sql/db.sql')) as sql_file:
+    with open(join(getcwd(), 'util/database/sql/db.sql')) as sql_file:
         sql_script = sql_file.read()
 
     # Execute the script
@@ -62,5 +63,3 @@ def create_database(overwrite=False):
     #     return False
 
     return True
-
-create_database(True)

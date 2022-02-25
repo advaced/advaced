@@ -1,6 +1,9 @@
 # Project version
 __version__ = '1.0.0'
 
+# Database path
+DATABASE_FILE = '/usr/lib/advaced/database/db.db'
+
 # Set options-dict up
 OPTIONS = {
     # Wich network to use

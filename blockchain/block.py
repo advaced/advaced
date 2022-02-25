@@ -89,6 +89,17 @@ class Block:
                        + self.validator if self.validator else "").encode()).hexdigest()
 
 
+    @property
+    def score(self) -> float:
+        """Returns the staking and hash worth of the block.
+
+        :return: Block score (the higher the score the higher is the probability of
+                 getting chosen to verify a block).
+        :rtype: float
+        """
+        pass
+
+
     def sign_block(self, private_key):
         """Signs the block with the private-key of the validators keypair (The validator must be set).
 

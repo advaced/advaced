@@ -15,6 +15,9 @@ Here is a list of the things we are currently working on.
   - [ ] Add peer-2-peer documentation
   - [ ] Add validator documentation
 - [ ] Create a working network that consists of nodes
+  - [ ] Add peer-2-peer connection
+  - [ ] Add node processor, that schedules the tasks
+  - [ ] Add node finder
 - [x] Add a transaction process
 - [x] Add a wallet-system
 - [x] Create a working blockchain

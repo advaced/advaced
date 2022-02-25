@@ -1,7 +1,7 @@
 # Add to path
 from sys import path
 
-from os.path import join, isdir
+from os.path import join, exists
 from os import getcwd, mkdir, chmod
 
 path.insert(0, getcwd())

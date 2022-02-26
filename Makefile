@@ -3,4 +3,5 @@ install:
 	python3 build
 	chmod +rwx /usr/bin/advaced
 	chmod +rwx /usr/lib/advaced
-	chown 110 /usr/lib/advaced/database
+	chmod 777 /usr/lib/advaced/database
+	chmod 777 /usr/lib/advaced/database/db.db

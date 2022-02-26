@@ -5,7 +5,6 @@ from os.path import join, exists
 from os import getcwd, mkdir, chmod
 
 path.insert(0, getcwd())
-print(path)
 
 # Database-handler
 from util.database.initialize import create_database, create_tables, DATABASE_FILE

@@ -33,6 +33,48 @@ class Database():
             self.db_thread.start()
 
 
+    @classmethod
+    def fetchone_from_db(cls, sql_command: str, sql_data: dict):
+        """Fetches one response from the database.
+
+        :param sql_command: Command to execute.
+        :type sql_command: str
+        :param sql_data: Arguments to replace in the command.
+        :type sql_data: dict
+
+        :return: Response of the database.
+        """
+
+        # Set the database connection up
+        connection = connect(DATABASE_FILE)
+
+        # Execute the sql and wait for the response
+        response = cls.execute_sql(connection, sql_command, sql_data, 'one')
+
+        return response
+
+
+    @classmethod
+    def fetchall_from_db(cls, sql_command: str, sql_data: dict):
+        """Fetches the full response from the database.
+
+        :param sql_command: Command to execute.
+        :type sql_command: str
+        :param sql_data: Arguments to replace in the command.
+        :type sql_data: dict
+
+        :return: Response of the database.
+        """
+
+        # Set the database connection up
+        connection = connect(DATABASE_FILE)
+
+        # Execute the sql and wait for the response
+        response = cls.execute_sql(connection, sql_command, sql_data, 'all')
+
+        return response
+
+
     @staticmethod
     def execute_sql(connection: Connection, sql_command: str, executing_args: dict=None, fetch=None):
         """Execute the given sql.
@@ -106,6 +148,8 @@ class Database():
         :type sql_command: str
         :param sql_data: Arguments to replace in the command.
         :type sql_data: dict
+
+        :return: Response of the database.
         """
 
         # Set the queue up
@@ -129,6 +173,8 @@ class Database():
         :type sql_command: str
         :param sql_data: Arguments to replace in the command.
         :type sql_data: dict
+
+        :return: Response of the database.
         """
 
         # Set the queue up

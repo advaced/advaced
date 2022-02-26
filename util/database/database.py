@@ -143,3 +143,73 @@ class Database():
 
         # Return the data
         return query_queue.get()
+
+
+    def start(self):
+        """Starts the database-thread manually.
+
+        :return: Status if database start was successful.
+        :rtype: bool
+        """
+
+        # Check if database is already running
+        if self.db_thread.is_alive():
+            return False
+
+        # Check if stop-event is set
+        if self.stop_event.is_set():
+            self.stop_event = Event()
+            self.db_thread = Thread(target=self.database_handler)
+
+        # Start the database-handler
+        self.db_thread.start()
+
+        return True
+
+
+    def stop(self):
+        """Stops the database-thread manually.
+
+        :return: Status if database stop was successful.
+        :rtype: bool
+        """
+        # Check if database is not running
+        if not self.db_thread.is_alive():
+            return False
+
+        # Check if stop-event is set
+        # if self.stop_event.is_set():
+        #     return False
+
+        # Stop the database-handler
+        self.stop_event.set()
+
+        return True
+
+
+    def restart(self):
+        """Restarts the database-thread manually.
+
+        :return: Status if database restart was successful.
+        :rtype: bool
+        """
+
+        # Check wether the database-thread is running or not
+        if not self.db_thread.is_alive():
+            return False
+
+        # Stop the database
+        self.stop()
+
+        # Wait until stop is injected
+        while self.db_thread.is_alive():
+            time_sleep(.01)
+
+        # Start the database
+        self.start()
+
+        # Check if restart was not successful
+        if not self.db_thread.is_alive():
+            return False
+
+        return True

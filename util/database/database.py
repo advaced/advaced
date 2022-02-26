@@ -143,6 +143,3 @@ class Database():
 
         # Return the data
         return query_queue.get()
-
-db = Database()
-print(db.db_q.put(('INSERT INTO nodes_archive VALUES (:ip, :port, 0)', { 'ip': "192.168.178.1", 'port': 500 })))

@@ -17,7 +17,7 @@ CREATE TABLE blockchain_v1_0_0 (
 -- Known-nodes-archive
 CREATE TABLE nodes_archive (
     ip_address VARCHAR(32) NOT NULL,
-    port INT(11) NOT NULL,
+    port INT(11) NOT NULL
 );
 
 -- Nodes to burn

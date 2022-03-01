@@ -1,12 +1,16 @@
-# Add path
+# Path management
 from os.path import exists, join
-from os import remove, getcwd
+from os import getcwd
 
 # SQLite connector
 from sqlite3 import connect
 
+# Add path
+from sys import path
+path.insert(0, getcwd())
+
 # Database path
-DATABASE_FILE = '/usr/lib/advaced/database/db.db'
+from __init__ import DATABASE_FILE
 
 
 def create_tables(cursor):

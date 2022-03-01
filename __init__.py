@@ -1,8 +1,22 @@
+from platform import system
+from os.path import join
+from os import getcwd
+
 # Project version
 __version__ = '1.0.0'
 
-# Database path
-DATABASE_FILE = '/usr/lib/advaced/database/db.db'
+# System to use
+OS = system()
+
+# Set the database path from used operating system
+if OS == 'Linux':
+    DATABASE_FILE = join('usr', 'lib', 'advaced', 'database', 'db.db')
+
+elif OS == 'Windows':
+    DATABASE_FILE = join(getcwd(), 'db.db') # Path firstly used only for developement
+
+elif OS == 'Darwin':
+    DATABASE_FILE = join('Library', 'advaced', 'database', 'db.db')
 
 # Set options-dict up
 OPTIONS = {

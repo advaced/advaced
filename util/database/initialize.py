@@ -5,12 +5,9 @@ from os import getcwd
 # SQLite connector
 from sqlite3 import connect
 
-# Add path
-from sys import path
-path.insert(0, getcwd())
-
 # Database path
-from __init__ import DATABASE_FILE
+# from ...__init__ import DATABASE_FILE
+DATABASE_FILE = join('/usr', 'lib', 'advaced', 'database', 'db.db')
 
 
 def create_tables(cursor):

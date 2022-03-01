@@ -200,11 +200,14 @@ class Block:
         """
         return {
             'index': self.index,
-            'version': self.version,
-            'base_fee': self.base_fee,
-            'tx': self.tx_dict,
-            'timestamp': str(self.timestamp),
             'previous_hash': self.previous_hash,
+
+            'version': self.version,
+            'timestamp': str(self.timestamp),
+
+            'base_fee': self.base_fee,
+            'tx': self.tx_dict,            
+
             'hash': self.hash,
             'validator': self.validator,
             'signature': self.signature

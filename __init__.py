@@ -10,7 +10,7 @@ OS = system()
 
 # Set the database path from used operating system
 if OS == 'Linux':
-    DATABASE_FILE = join('usr', 'lib', 'advaced', 'database', 'db.db')
+    DATABASE_FILE = join('/usr', 'lib', 'advaced', 'database', 'db.db')
 
 elif OS == 'Windows':
     DATABASE_FILE = join(getcwd(), 'db.db') # Path firstly used only for developement

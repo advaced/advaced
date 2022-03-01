@@ -32,7 +32,7 @@ class Database():
 
         if not manual:
             self.db_thread.start()
-    
+
 
     @classmethod
     def push_to_db(cls,  sql_command: str, sql_data: dict):
@@ -51,15 +51,15 @@ class Database():
         # Try to execute the sql and wait for the response
         try:
             cls.execute_sql(connection, sql_command, sql_data)
-        
-        except error:
+
+        except Exception as error:
             # Development Log
             print(error)
 
             return False
 
         return True
-    
+
 
     @classmethod
     def fetchone_from_db(cls, sql_command: str, sql_data: dict):

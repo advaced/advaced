@@ -1,6 +1,8 @@
 # Add to path
 from sys import path
 import os
+
+from util.database.blockchain import fetch_block
 path.insert(0, os.path.join(os.getcwd(), '../'))
 
 # Project version
@@ -35,6 +37,17 @@ class Blockchain:
         # Check if the cache is valid
         if not self.valid_cache:
             return False
+
+        for x in range(1, self.last_blocks[-1].index -1):
+            block_data = fetch_block(x)
+
+            if not block_data:
+                # TODO -> Ask other nodes for block
+                return False
+
+            # Initialize block from the data
+            block = Block()
+            block.index = block_data # Unfinished!
 
         # TODO -> Add verification for whole chain (also the table in the database)
 

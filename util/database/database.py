@@ -1,4 +1,5 @@
 # Database handling
+from distutils.log import error
 from sqlite3 import connect, Connection
 
 from queue import Queue
@@ -9,7 +10,7 @@ from time import sleep as time_sleep
 # Add to path
 from sys import path
 import os
-path.insert(0, os.path.join(os.getcwd(), '../../'))
+path.insert(0, os.path.join(os.getcwd()))
 
 # Path of the database
 from __init__ import DATABASE_FILE
@@ -31,7 +32,34 @@ class Database():
 
         if not manual:
             self.db_thread.start()
+    
 
+    @classmethod
+    def push_to_db(cls,  sql_command: str, sql_data: dict):
+        """Executes the input to the database.
+
+        :param sql_command: Command to execute.
+        :type sql_command: str
+        :param sql_data: Arguments to replace in the command.
+        :type sql_data: dict
+
+        :return: Status wether the execution was successful or not.
+        """
+        # Set the database connection up
+        connection = connect(DATABASE_FILE)
+
+        # Try to execute the sql and wait for the response
+        try:
+            cls.execute_sql(connection, sql_command, sql_data)
+        
+        except error:
+            # Development Log
+            print(error)
+
+            return False
+
+        return True
+    
 
     @classmethod
     def fetchone_from_db(cls, sql_command: str, sql_data: dict):

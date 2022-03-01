@@ -1,9 +1,7 @@
 # Add to path
 from sys import path
 import os
-
-from util.database.blockchain import fetch_block
-path.insert(0, os.path.join(os.getcwd(), '../'))
+path.insert(0, os.path.join(os.getcwd(), '..'))
 
 # Project version
 from __init__ import __version__
@@ -14,6 +12,9 @@ from blockchain import Block, Transaction
 # Wallet
 from accounts import Wallet
 
+# Database-handler
+from util.database.blockchain import fetch_block, add_block
+
 class Blockchain:
     def __init__(self, genesis_block=None, genesis_keys: [ str ]=None, versionstamps=None):
         # Set chain-versioning
@@ -22,8 +23,12 @@ class Blockchain:
             # TODO -> Add auto-fetching from new versions and its migration-timestamps
         }
 
-        # Contains the last 100 blocks / Create the genesis blocks
-        self.last_blocks = [ genesis_block if genesis_block else self.create_genesis(igenesis_keys if genesis_keys else [ ]) ]
+        # Create the genesis block
+        genesis_block = genesis_block if genesis_block else self.create_genesis(igenesis_keys if genesis_keys else [ ])
+
+        # Last block cache contains the last 100 blocks  | Include genesis block into chain
+        self.last_blocks = [ genesis_block ]
+        add_block(genesis_block.to_dict())
 
 
     @property
@@ -112,12 +117,17 @@ class Blockchain:
         self.last_blocks.insert(0, block)
 
         # Push block to database
-        # TODO -> Push block 101 to database
+        success = add_block(block.to_dict())
 
         # Reduce all blocks in last-blocks cache, that are over the last 100
         while len(self.last_blocks) > 100:
             # Remove the last block from the caching-list
             self.last_blocks.pop(len(self.last_blocks) -1)
+
+        # Check if the data is wrong or the block already is included into the chain
+        if not success:
+            # TODO -> Check why the operation failed (becuase the data was wrong or the block is already included into the chain)
+            return False
 
         return True
 
@@ -152,6 +162,17 @@ class Blockchain:
                 for block in self.last_blocks:
                     if index == block.index:
                         return block
+
+            # If not in cache fetch it from the database
+            block_dict = fetch_block(index)
+
+            # Check if block was fetched successful
+            if not block_dict:
+                return False
+
+            # Set block up
+
+            return # block
 
         elif tx:
             pass

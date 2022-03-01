@@ -10,10 +10,10 @@ CREATE TABLE blockchain_v1_0_0 (
 
     tx_json TEXT NOT NULL,
 
+    hash VARCHAR(64) NOT NULL,
+
     validator VARCHAR(128) NOT NULL,
-    signature VARCHAR(128) NOT NULL,
-    
-    PRIMARY KEY block_index
+    signature VARCHAR(128) NOT NULL
 );
 
 -- Known-nodes-archive

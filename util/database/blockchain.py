@@ -27,22 +27,24 @@ def add_block(block_dict: dict, overwrite: bool=False):
         # Check if overwriting blocks is set to off
         if not overwrite:
             return False
-        
+
         remove_block(block_dict['index'])
 
     # Transform transaction-dict to json-format
-    tx = Transaction.from_dict(block_dict['tx'])
+    tx = Transaction('', '', 0)
+    tx.from_dict(block_dict['tx'])
+
     tx = tx.to_json()
     block_dict['tx'] = tx
 
     # Add block to the database
     success = Database.push_to_db('INSERT INTO blockchain_v1_0_0 VALUES (:index, :previous_hash, :version, :timestamp, \
-                                   :base_fee, :tx, :hash, :validator, :signature)')
+                                   :base_fee, :tx, :hash, :validator, :signature)', block_dict)
 
     # Check if block was successfully added to the database
     if not success:
         return False
-    
+
     return True
 
 
@@ -62,7 +64,7 @@ def remove_block(index: int):
     # Check if execution was not succesful
     if not success:
         return False
-    
+
     return True
 
 
@@ -84,20 +86,3 @@ def fetch_block(index: int):
         return False
 
     return block_data
-
-from json import dumps
-print(add_block({
-            'index': 1,
-            'previous_hash': '112',
-
-            'version': 'df',
-            'timestamp': '234',
-
-            'base_fee': 1,
-            'tx': dumps({'sdfsdfsdfsdf': 'dsf'}),            
-
-            'hash': 'sdf',
-            'validator': '345',
-            'signature': '345'
-        }))
-print(fetch_block(1))

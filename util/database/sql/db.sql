@@ -1,6 +1,6 @@
 -- Blockchain-storage v1.0.0
-CREATE TABLE blockchain_v1_0_0 (
-    block_index INT(32) NOT NULL,
+CREATE TABLE blockchain (
+    block_index INT(32) UNIQUE NOT NULL,
     previous_hash VARCHAR(64) NOT NULL,
 
     version VARCHAR(5) NOT NULL,
@@ -8,11 +8,25 @@ CREATE TABLE blockchain_v1_0_0 (
 
     base_fee DECIMAL NOT NULL,
 
-    tx_json TEXT NOT NULL,
-
     hash VARCHAR(64) NOT NULL,
 
     validator VARCHAR(128) NOT NULL,
+    signature VARCHAR(128) NOT NULL
+);
+
+CREATE TABLE transactions (
+    block_index INT(32) NOT NULL,
+
+    sender VARCHAR(128) NOT NULL,
+    recipient VARCHAR(128) NOT NULL,
+
+    amount INT(32) NOT NULL,
+    fee INT(32) NOT NULL,
+
+    type VARCHAR(32) NOT NULL,
+    timestamp DATETIME NOT NULL,
+
+    hash VARCHAR(64) NOT NULL,
     signature VARCHAR(128) NOT NULL
 );
 

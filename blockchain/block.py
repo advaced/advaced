@@ -133,7 +133,7 @@ class Block:
         return True
 
 
-    def is_valid(self, blockchain, in_chain=False):
+    def is_valid(self, blockchain, in_chain=False) -> bool:
         """Check if the block is valid.
 
         :param blockchain: The blockchain where the block is in or should go in.
@@ -206,7 +206,7 @@ class Block:
             'timestamp': str(self.timestamp),
 
             'base_fee': self.base_fee,
-            'tx': self.tx_dict,            
+            'tx': self.tx_dict,
 
             'hash': self.hash,
             'validator': self.validator,
@@ -223,7 +223,48 @@ class Block:
         return json.dumps(self.to_dict())
 
 
-    def from_tx_dict(self, tx_dict) -> bool:
+    def from_dict(self, block_dict):
+        """Set block-data from dictionary.
+
+        :param block_dict: Information of block.
+        :type block_dict: dict
+
+        :return: A status wether the data-load was successful or not
+        :rtype: bool
+        """
+        try:
+            # Reinitialize block from data
+            self.index = block_dict['index']
+            self.version = block_dict['version']
+            self.base_fee = block_dict['base_fee']
+
+            success = self.from_tx_dict(block_dict['tx'])
+
+            # Check if transaction initialization was successful
+            if not success:
+                return False
+
+            # Create datetime-object from string
+            self.timestamp = datetime.strptime(block_dict['timestamp'], '%Y-%m-%d %H:%M:%S.%f')
+
+            self.previous_hash = block_dict['previous_hash']
+
+            # Check if the validator is included in the json-data
+            if block_dict['validator']:
+                self.validator = block_dict['validator']
+
+            # Check if the signature is included in the json-data
+            if block_dict['signature']:
+                self.signature = block_dict['signature']
+
+        # An error occurred while assigning data
+        except:
+            return False
+
+        return True
+
+
+    def from_tx_dict(self, tx_dict):
         """Create transactions from dict-data
 
         :param tx_dict: List that includes transaction-values as dict-object.
@@ -253,7 +294,7 @@ class Block:
         return True
 
 
-    def from_json(self, json_data) -> bool:
+    def from_json(self, json_data):
         """Create block from json-data.
 
         :param json_data: String in json-format that includes the block-values
@@ -262,30 +303,16 @@ class Block:
         :return: A status wether the data-load was successful or not
         :rtype: bool
         """
-
-        # Convert json to dictionary
-        dict_data = json.loads(json_data)
-
         try:
-            # Set the data to the transaction
-            self.index = dict_data['index']
-            self.version = dict_data['version']
-            self.base_fee = dict_data['base_fee']
+            # Convert json to dictionary
+            dict_data = json.loads(json_data)
 
-            self.from_tx_dict(dict_data['tx'])
+            # Assign dictionary-data to the class
+            success = self.from_dict(dict_data)
 
-            # Create datetime-object from string
-            self.timestamp = datetime.strptime(dict_data['timestamp'], '%Y-%m-%d %H:%M:%S.%f')
-
-            self.previous_hash = dict_data['previous_hash']
-
-            # Check if the validator is included in the json-data
-            if dict_data['validator']:
-                self.validator = dict_data['validator']
-
-            # Check if the signature is included in the json-data
-            if dict_data['signature']:
-                self.signature = dict_data['signature']
+            # Check if data initialization was successful
+            if not success:
+                return False
 
         # Return the status
         except KeyError or json.JSONDecodeError:

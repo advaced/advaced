@@ -30,16 +30,18 @@ def add_block(block_dict: dict, overwrite: bool=False):
 
         remove_block(block_dict['index'])
 
-    # Transform transaction-dict to json-format
-    tx = Transaction('', '', 0)
-    tx.from_dict(block_dict['tx'])
+    # Add transactions to database
+    for transaction in block_dict['tx']:
+        transaction['block_index'] = block_dict['index']
 
-    tx = tx.to_json()
-    block_dict['tx'] = tx
+        success = Database.push_to_db('INSERT INTO blockchain VALUES (:block_index, :sender, :recipient, :amount, :fee, \
+                                       :type, :timestamp, :hash, :signature)', transaction)
+        
+
 
     # Add block to the database
     success = Database.push_to_db('INSERT INTO blockchain_v1_0_0 VALUES (:index, :previous_hash, :version, :timestamp, \
-                                   :base_fee, :tx, :hash, :validator, :signature)', block_dict)
+                                   :base_fee, :hash, :validator, :signature)', block_dict)
 
     # Check if block was successfully added to the database
     if not success:

@@ -13,22 +13,32 @@ from blockchain import Block, Transaction
 from accounts import Wallet
 
 # Database-handler
-from util.database.blockchain import fetch_block, add_block
+from util.database.blockchain import add_block, fetch_block, fetch_transaction_block_index, load_cache
 
 class Blockchain:
-    def __init__(self, genesis_block=None, genesis_keys: [ str ]=None, versionstamps=None):
+    def __init__(self, genesis_block=None, genesis_tx: [ Transaction ]=None, versionstamps=None):
         # Set chain-versioning
         self.version = __version__
         self.versionstamps = versionstamps if versionstamps else {
             # TODO -> Add auto-fetching from new versions and its migration-timestamps
         }
 
-        # Create the genesis block
-        genesis_block = genesis_block if genesis_block else self.create_genesis(igenesis_keys if genesis_keys else [ ])
+        # Check if a genesis-block was provided
+        if genesis_block:
+            # Last block cache contains the last 100 blocks | Include genesis block into chain
+            self.last_blocks = [ genesis_block ]
 
-        # Last block cache contains the last 100 blocks  | Include genesis block into chain
-        self.last_blocks = [ genesis_block ]
-        add_block(genesis_block.to_dict())
+        # Check if genesis-transactions were given
+        elif genesis_tx:
+            genisis_block = self.create_genesis(genesgenesis_txis_keys if genesis_tx else [ ])
+
+            # Last block cache contains the last 100 blocks | Include genesis block into chain
+            self.last_blocks = [ genesis_block ]
+            add_block(genesis_block.to_dict())
+
+        # Fetch last-blocks from database
+        else:
+            self.load_last_blocks()
 
 
     @property
@@ -90,6 +100,30 @@ class Blockchain:
                     # Not a real public-key and no real signature
                     '00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
                     '00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000')
+
+
+    def load_last_blocks(self):
+        """Loads the cache (last 100 blocks) from the database.
+
+        :return: Load was successful
+        :rtype: bool
+        """
+
+        # Fetch last 100 blocks (or as much as there is) from the database
+        new_cache = load_cache()
+
+        # Something went wrong
+        if new_cache == False:
+            return False
+
+        # Currently there is nothing to cache
+        if new_cache == True:
+            return True
+
+        # Set the new cache
+        self.last_blocks = new_cache
+
+        return True
 
 
     def add_block(self, block: Block):
@@ -196,9 +230,24 @@ class Blockchain:
         if block in self.last_blocks:
             return True
 
-        # TODO -> Create inclusion-checks for blocks within the database
+        # Fetch block from the database
+        block_dict = fetch_block(block.index)
 
-        return False
+        # Check if block-dict was fetched successful
+        if not block_dict:
+            return False
+
+        # Check if fetched block is equal to the other block
+        if not block_dict["timestamp"] == str(block.timestamp):
+            return False
+
+        if not block_dict["validator"] == block.validator:
+            return False
+
+        if not block_dict["signature"] == block.signature:
+            return False
+
+        return True
 
 
     def tx_included(self, tx: Transaction) -> bool:
@@ -223,6 +272,8 @@ class Blockchain:
                     if tx == transaction:
                         return True
 
-        # TODO -> Create inclusion-checks for blocks within the database
+        # Check if transaction is in the database
+        if fetch_transaction_block_index(tx):
+            return True
 
         return False

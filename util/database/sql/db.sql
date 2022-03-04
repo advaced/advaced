@@ -1,4 +1,4 @@
--- Blockchain-storage v1.0.0
+-- Blockchain table v1.0.0
 CREATE TABLE blockchain (
     block_index INT(32) UNIQUE NOT NULL,
     previous_hash VARCHAR(64) NOT NULL,
@@ -14,6 +14,7 @@ CREATE TABLE blockchain (
     signature VARCHAR(128) NOT NULL
 );
 
+-- Transaction table v1.0.0
 CREATE TABLE transactions (
     block_index INT(32) NOT NULL,
 

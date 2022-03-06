@@ -6,6 +6,8 @@ name = "pypi"
 [packages]
 requests = "*"
 ecdsa = "*"
+grpcio = "*"
+grpcio-tools = "*"
 
 [dev-packages]
 

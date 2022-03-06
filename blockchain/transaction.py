@@ -153,10 +153,13 @@ class Transaction:
         return {
             'sender': self.sender,
             'recipient': self.recipient,
+
             'amount': self.amount,
             'fee': self.fee,
+
             'type': self.type,
             'timestamp': str(self.timestamp),
+
             'hash': self.hash,
             'signature': self.signature
         }

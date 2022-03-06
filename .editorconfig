@@ -10,7 +10,7 @@ insert_final_newline = true
 trim_trailing_whitespace = true
 
 # Source code files
-[*.{py,sh,bat}]
+[*.{py,sh,bat,proto}]
 indent_size = 4
 
 # Makefiles and batch files

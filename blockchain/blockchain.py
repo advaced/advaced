@@ -13,7 +13,7 @@ from blockchain import Block, Transaction
 from accounts import Wallet
 
 # Database-handler
-from util.database.blockchain import add_block, fetch_block, fetch_transaction_block_index, load_cache
+from util.database.blockchain import add_block, fetch_block, fetch_transaction_block_index, load_cache, recreate_block
 
 class Blockchain:
     def __init__(self, genesis_block=None, genesis_tx: [ Transaction ]=None, versionstamps=None):
@@ -30,7 +30,7 @@ class Blockchain:
 
         # Check if genesis-transactions were given
         elif genesis_tx:
-            genisis_block = self.create_genesis(genesgenesis_txis_keys if genesis_tx else [ ])
+            genisis_block = self.create_genesis(genesis_tx if genesis_tx else [ ])
 
             # Last block cache contains the last 100 blocks | Include genesis block into chain
             self.last_blocks = [ genesis_block ]
@@ -53,18 +53,30 @@ class Blockchain:
         if not self.valid_cache:
             return False
 
-        for x in range(1, self.last_blocks[-1].index -1):
-            block_data = fetch_block(x)
+        # Check if there are any blocks that are not cached
+        if self.last_blocks[-1].index -1 > 1:
 
-            if not block_data:
-                # TODO -> Ask other nodes for block
-                return False
+            # Go through all the blocks in the database
+            for x in range(1, self.last_blocks[-1].index -1):
+                # Fetch dict-data of the block
+                block_data = fetch_block(x)
 
-            # Initialize block from the data
-            block = Block()
-            block.index = block_data # Unfinished!
+                # Check if the block could be fetched
+                if not block_data:
+                    # TODO -> Ask other nodes for block
+                    return False
 
-        # TODO -> Add verification for whole chain (also the table in the database)
+                # Initialize block from the data
+                block = Block()
+                success = block.from_dict(block_data)
+
+                # Check if the block recreation was successful
+                if not success:
+                    return False
+
+                # Check if the block and its transactions are valid
+                if not block.is_valid(self, True):
+                    return False
 
         return True
 
@@ -105,7 +117,7 @@ class Blockchain:
     def load_last_blocks(self):
         """Loads the cache (last 100 blocks) from the database.
 
-        :return: Load was successful
+        :return: Load was successful.
         :rtype: bool
         """
 
@@ -205,8 +217,16 @@ class Blockchain:
                 return False
 
             # Set block up
+            block_data = fetch_block(index)
 
-            return # block
+            block = Block()
+            block.from_dict(block_data)
+
+            # Check if the block was fethced successful
+            if not block:
+                return False
+
+            return block
 
         elif tx:
             pass
@@ -277,3 +297,6 @@ class Blockchain:
             return True
 
         return False
+
+bc = Blockchain()
+print(bc.is_valid)

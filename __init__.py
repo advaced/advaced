@@ -18,6 +18,13 @@ elif OS == 'Windows':
 elif OS == 'Darwin':
     DATABASE_FILE = join('Library', 'advaced', 'database', 'db.db')
 
+# Socket server and client ports
+SERVER_PORT = 57575
+CLIENT_PORT = 67676
+
+# RPC connection endpoint
+RPC_PORT = 87878
+
 # Set options-dict up
 OPTIONS = {
     # Wich network to use

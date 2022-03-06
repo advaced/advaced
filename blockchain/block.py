@@ -145,8 +145,9 @@ class Block:
         :rtype: bool
         """
 
-        # Check if index is equal to 1
+        # Check if the block is the genesis block
         if self.index == 1:
+            # TODO -> Compare to the real genesis block
             return True
 
         # Fetch the previous block
@@ -256,6 +257,10 @@ class Block:
             # Check if the signature is included in the json-data
             if block_dict['signature']:
                 self.signature = block_dict['signature']
+
+            # Check if the hashes are the same
+            if block_dict['hash'] and not self.hash == block_dict['hash']:
+                return False
 
         # An error occurred while assigning data
         except:

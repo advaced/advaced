@@ -13,7 +13,7 @@ from blockchain import Block, Transaction
 from accounts import Wallet
 
 # Database-handler
-from util.database.blockchain import add_block, fetch_block, fetch_transaction_block_index, load_cache, recreate_block
+from util.database.blockchain import add_block, fetch_block, fetch_transaction_block_index, fetch_transactions, load_cache, recreate_block
 
 class Blockchain:
     def __init__(self, genesis_block=None, genesis_tx: [ Transaction ]=None, versionstamps=None):
@@ -237,6 +237,23 @@ class Blockchain:
         return False
 
 
+    @staticmethod
+    def fetch_transactions(public_key: str, tx_type: str=None, is_sender: bool=None):
+        """Fetch all transactions the account made in the past.
+
+        :param public_key: Verifying key of the account.
+        :type public_key: str
+        :param tx_type: Type of the transaction.
+        :type tx_type: str
+        :param is_sender: If the account is the sender, the recipient or both.
+        :type is_sender: bool | NoneType
+
+        :return: List of transactions the account made or received.
+        :rtype: [ Transaction ]
+        """
+        return fetch_transactions(public_key, tx_type, is_sender)
+
+
     def block_included(self, block: Block) -> bool:
         """Check whether the block is in the chain or not.
 
@@ -297,6 +314,3 @@ class Blockchain:
             return True
 
         return False
-
-bc = Blockchain()
-print(bc.is_valid)

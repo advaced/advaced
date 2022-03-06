@@ -221,7 +221,7 @@ def load_cache():
         if x < 0:
             return last_blocks
 
-        block_dict = fetch_block(1)
+        block_dict = fetch_block(x)
 
         block = Block()
         block.from_dict(block_dict)

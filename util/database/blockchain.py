@@ -228,3 +228,84 @@ def load_cache():
         last_blocks.append(block)
 
     return last_blocks
+
+
+def fetch_transactions(public_key: str, tx_type: str=None, is_sender: bool=None):
+    """Fetch all transactions the account made in the past.
+
+    :param public_key: Verifying key of the account.
+    :type public_key: str
+    :param tx_type: Type of the transaction.
+    :type tx_type: str
+    :param is_sender: If the account is the sender, the recipient or both.
+    :type is_sender: bool | NoneType
+
+    :return: List of transactions the account made or received.
+    :rtype: [ Transaction ]
+    """
+    # Check if the type of the transaction is provided and no other specifications
+    if tx_type and is_sender == None:
+        # Fetch the transactions
+        transactions_data = Database.fetchall_from_db('SELECT * FROM transactions WHERE type = :type AND \
+                                                       (sender = :public_key OR recipient = :public_key)',
+                                                      { 'type': tx_type, 'public_key': public_key })
+
+    # Check if the type of the transaction is provided and the account should be the sender
+    elif tx_type and is_sender == True:
+        # Fetch the transactions
+        transactions_data = Database.fetchall_from_db('SELECT * FROM transactions WHERE type = :type AND \
+                                                       sender = :public_key',
+                                                      { 'type': tx_type, 'public_key': public_key })
+
+    # Check if the type of the transaction is provided and the account should be the sender
+    elif tx_type and is_sender == False:
+        # Fetch the transactions
+        transactions_data = Database.fetchall_from_db('SELECT * FROM transactions WHERE type = :type AND \
+                                                       recipient = :public_key',
+                                                      { 'type': tx_type, 'public_key': public_key })
+
+    # Check if only the transactions should be fetched were the account is the sender
+    elif is_sender == True:
+        # Fetch the transactions
+        transactions_data = Database.fetchall_from_db('SELECT * FROM transactions WHERE sender = :public_key',
+                                                      { 'public_key': public_key })
+
+    # Check if only the transactions should be fetched were the account is the recipient
+    elif is_sender == True:
+        # Fetch the transactions
+        transactions_data = Database.fetchall_from_db('SELECT * FROM transactions WHERE recipient = :public_key',
+                                                      { 'public_key': public_key })
+
+    # Fetch all transactions where this account is involved
+    else:
+        transactions_data = Database.fetchall_from_db('SELECT * FROM transactions WHERE sender = :public_key OR \
+                                                       recipient = :public_key',
+                                                      { 'type': tx_type, 'public_key': public_key })
+
+    # Check if no transactions were found
+    if not transactions_data:
+        return [ ]
+
+    transactions = [ ]
+
+    # Check if multiple transactions were fetched
+    if type(transactions_data) == list:
+        # Go through all transaction datasets and recreate them to classes
+        for tx_data in transactions_data:
+            tx_dict = recreate_tx(tx_data)
+
+            tx = Transaction('', '', 0)
+            tx.from_dict(tx_dict)
+
+            transactions.append(tx)
+
+    # Only one tx was fetched
+    else:
+        tx_dict = recreate_tx(transactions_data)
+
+        tx = Transaction('', '', 0)
+        tx.from_dict(tx_dict)
+
+        transactions.append(tx)
+
+    return transactions

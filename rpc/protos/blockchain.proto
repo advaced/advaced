@@ -1,0 +1,81 @@
+syntax = "proto3";
+
+package blockchain;
+
+
+service Blockchain {
+    rpc getBlock (BlockRequest) returns (Block);
+    rpc getBlocks (BlockRequest) returns (Blocks);
+
+    rpc getTransaction (TransactionRequest) returns (Transaction);
+    rpc getTransactions (TransactionRequest) returns (Transactions);
+}
+
+
+// Provide values to search for a specific block
+message BlockRequest {
+    optional int64 index = 1;
+    optional string previousHash = 2;
+
+    optional string timestamp = 4;
+
+    optional string hash = 7;
+    optional string validator = 8;
+    optional string signature = 9;
+}
+
+
+// Provide values to search for a specific transaction
+message TransactionRequest {
+    optional string sender = 1;
+    optional string recipient = 2;
+
+    optional uint64 amount = 3;
+
+    optional string type = 5;
+    optional string timestamp = 6;
+
+    optional string hash = 7;
+    optional string signature = 8;
+}
+
+
+message Transaction {
+    string sender = 1;
+    string recipient = 2;
+
+    uint64 amount = 3;
+    uint32 fee = 4;
+
+    string type = 5;
+    string timestamp = 6;
+
+    string hash = 7;
+    string signature = 8;
+}
+
+
+message Transactions {
+    repeated Transaction tx = 1;
+}
+
+
+message Block {
+    int64 index = 1;
+    string previousHash = 2;
+
+    string version = 3;
+    string timestamp = 4;
+
+    uint32 baseFee = 5;
+    repeated Transaction tx = 6;
+
+    string hash = 7;
+    string validator = 8;
+    string signature = 9;
+}
+
+
+message Blocks {
+    repeated Block blocks = 1;
+}

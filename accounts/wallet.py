@@ -107,25 +107,71 @@ class Wallet:
         return True
 
 
-    @staticmethod
-    def coins(public_key: str) -> float:
+    @classmethod
+    def coins(cls, public_key: str, blockchain) -> float:
         """Returns the amount of coins the wallet owns.
 
         :param public_key: Public-key of the wallet.
         :type public_key: str
+        :param blockchain: The Blockchain to search.
+        :type blockchain: :py:class:`blockchain.Blockchain`
 
         :return: Amount of coins in the wallet.
         :rtype: float
         """
-        pass
+
+        # Fetch the claimed coins
+        claimed_coins = cls.claims(public_key, blockchain)
+
+        # Fetch the coins that the account spend on staking
+        stake_tx = blockchain.fetch_transactions(public_key, tx_type='stake', is_sender=True)
+        spend_on_stake = 0
+
+        if len(stake_tx) > 0:
+            for transaction in stake_tx:
+                spend_on_stake += transaction.amount + transaction.fee
+
+        # Fetch the coins that the wallet received and send as a tx
+        tx = blockchain.fetch_transactions(public_key, tx_type='tx')
+        tx_coins = 0
+
+        if len(tx) > 1:
+            for transaction in tx:
+                # Check if the transaction comes from this wallet
+                if transaction.sender == public_key:
+                    tx_coins -= transaction.amount + transaction.fee
+
+                # Transaction goes to this wallet
+                else:
+                    tx_coins += transaction.amount
+
+        # Return total coins
+        return claimed_coins + tx_coins - spend_on_stake
 
 
     @staticmethod
-    def stake(public_key: str) -> float:
+    def claims(public_key: str, blockchain) -> float:
+        """Returns the amount of coins the wallet owns.
+
+        :param public_key: Public-key of the wallet.
+        :type public_key: str
+        :param blockchain: The Blockchain to search.
+        :type blockchain: :py:class:`blockchain.Blockchain`
+
+        :return: Amount of coins in the wallet.
+        :rtype: float
+        """
+        return 0
+
+
+    @staticmethod
+    def stake(public_key: str, blockchain) -> float:
         """Returns the coins that the wallet has staked.
 
         :param public_key: Public-key of the wallet.
         :type public_key: str
+        :param blockchain: The Blockchain to search.
+        :type blockchain: :py:class:`blockchain.Blockchain`
 
         :return: Amount of staked coins of the wallet.
         :rtype: float
@@ -134,11 +180,13 @@ class Wallet:
 
 
     @staticmethod
-    def score(public_key: str) -> float:
+    def score(public_key: str, blockchain) -> float:
         """Returns the staking worth of the wallet.
 
         :param public_key: Public-key of the wallet.
         :type public_key: str
+        :param blockchain: The Blockchain to search.
+        :type blockchain: :py:class:`blockchain.Blockchain`
 
         :return: Staking score (the higher the score the higher is the probability of
                  getting chosen to verify a block).

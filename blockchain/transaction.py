@@ -53,8 +53,8 @@ class Transaction:
         :return: Hex-digest of transaction-hash
         :rtype: str (hex-digest)
         """
-        return sha3_256((self.sender + self.recipient + str(self.amount) + str(self.fee) + \
-               self.type + str(self.timestamp)).encode()).hexdigest()
+        return sha3_256((str(self.sender) + str(self.recipient) + str(self.amount) + str(self.fee) +
+               str(self.type) + str(self.timestamp)).encode()).hexdigest()
 
 
     def sign_tx(self, private_key):
@@ -75,9 +75,9 @@ class Transaction:
             return False
 
         # Check if public-key is either the senders or the recipients key
-        if (not self.sender == public_key and not self.type == 'tx' and not self.type == 'stake' \
-            and not self.type == 'unstake' and not self.type == 'claim') or (not self.recipient == public_key \
-            and not self.type == 'burn'):
+        if ((not self.sender == public_key and not self.type == 'tx' and not self.type == 'stake'
+            and not self.type == 'unstake' and not self.type == 'claim') or (not self.recipient == public_key
+            and not self.type == 'burn')):
             return False
 
         # Set signature

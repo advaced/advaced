@@ -7,7 +7,7 @@ import json
 # Add to path
 from sys import path
 import os
-path.insert(0, os.path.join(os.getcwd(), '../'))
+path.insert(0, os.path.join(os.getcwd(), '..'))
 
 # Project version
 from __init__ import __version__

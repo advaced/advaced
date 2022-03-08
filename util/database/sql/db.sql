@@ -3,7 +3,7 @@ CREATE TABLE blockchain (
     block_index INT(32) UNIQUE NOT NULL,
     previous_hash VARCHAR(64) NOT NULL,
 
-    version VARCHAR(5) NOT NULL,
+    version VARCHAR(16) NOT NULL,
     timestamp DATETIME NOT NULL,
 
     base_fee DECIMAL NOT NULL,
@@ -31,10 +31,32 @@ CREATE TABLE transactions (
     signature VARCHAR(128) NOT NULL
 );
 
+-- Wallets
+CREATE TABLE accounts (
+    name VARCHAR(32) UNIQUE NOT NULL,
+    password_hash VARCHAR(128) NOT NULL,
+
+    public_key VARCHAR(128) NOT NULL,
+    private_key_hash VARCHAR(128) NOT NULL -- sault: password
+);
+
 -- Known-nodes-archive
 CREATE TABLE nodes_archive (
     ip_address VARCHAR(32) NOT NULL,
     port INT(11) NOT NULL
+);
+
+-- Versionstamps
+CREATE TABLE versionstamps (
+    version VARCHAR(16) NOT NULL,
+    timestamp DATETIME NOT NULL,
+
+    signature VARCHAR(128) NOT NULL
+);
+
+-- Developer public-keys
+CREATE TABLE dev_keys (
+    public_key
 );
 
 -- Nodes to burn

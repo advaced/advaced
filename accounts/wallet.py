@@ -1,10 +1,9 @@
 from ecdsa import SigningKey, VerifyingKey, SECP256k1
 from hashlib import sha3_512
 
-class Wallet:
-    def __init__(self, name=None, public_key: VerifyingKey=None, private_key: SigningKey=None):
-        self.name = name if name else 'Account'
 
+class Wallet:
+    def __init__(self, public_key: VerifyingKey=None, private_key: SigningKey=None):
         # Create wallet keypair (with ecdsa, the SECP256k1 curve and sha3-512 as hash-algorithm)
         verifying_key = SigningKey.generate(curve=SECP256k1, hashfunc=sha3_512)
 

@@ -1,4 +1,4 @@
-# Network handles
+# Network handling
 from threading import Thread
 from socket import socket, AF_INET, SOCK_STREAM
 from requests import get

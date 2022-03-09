@@ -51,12 +51,16 @@ CREATE TABLE versionstamps (
     version VARCHAR(16) NOT NULL,
     timestamp DATETIME NOT NULL,
 
+    public_key VARCHAR(128) NOT NULL,
     signature VARCHAR(128) NOT NULL
 );
 
+-- Development tests
+INSERT INTO versionstamps VALUES('1.0.0', SYSDATE(), 'Public key', '2ff2f0840806c87247915b5dfa6f923d48ce3c9ad5988c97c6ef6e3840acec90121d1329480ac25b47ec903da95b9ece8b2260be46b18b730e5f2e730beee0bd');
+
 -- Developer public-keys
 CREATE TABLE dev_keys (
-    public_key
+    public_key VARCHAR(128) NOT NULL
 );
 
 -- Nodes to burn

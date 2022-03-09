@@ -19,6 +19,8 @@ message BlockRequest {
 
     optional string timestamp = 4;
 
+    optional Transaction tx = 6;
+
     optional string hash = 7;
     optional string validator = 8;
     optional string signature = 9;

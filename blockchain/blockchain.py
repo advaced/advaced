@@ -13,15 +13,14 @@ from blockchain import Block, Transaction
 from accounts import Wallet
 
 # Database-handler
-from util.database.blockchain import add_block, fetch_block, fetch_transaction_block_index, fetch_transactions, load_cache, recreate_block
+from util.database.blockchain import (add_block, fetch_block, fetch_transaction_block_index, fetch_transactions,
+                                      load_cache, fetch_versionstamps)
 
 class Blockchain:
-    def __init__(self, genesis_block=None, genesis_tx: [ Transaction ]=None, versionstamps=None):
+    def __init__(self, genesis_block=None, genesis_tx: [ Transaction ]=None):
         # Set chain-versioning
         self.version = __version__
-        self.versionstamps = versionstamps if versionstamps else {
-            # TODO -> Add auto-fetching from new versions and its migration-timestamps
-        }
+        self.versionstamps = fetch_versionstamps()
 
         # Check if a genesis-block was provided
         if genesis_block:

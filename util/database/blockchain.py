@@ -309,3 +309,37 @@ def fetch_transactions(public_key: str, tx_type: str=None, is_sender: bool=None)
         transactions.append(tx)
 
     return transactions
+
+
+def fetch_versionstamps(db=None):
+    """Fetch the timestamps for the versions.
+
+    :return: Dictionary that consists of versions as keys and timestamps as values
+    :rtype: dict
+    """
+
+    # Check if a database-class was parsed
+    if db:
+        response = db.fetchall('SELECT version, timestamp FROM versionstamps', { })
+
+    else:
+        response = Database.fetchall_from_db('SELECT version, timestamp FROM versionstamps', { })
+
+    # Check if response exists
+    if not response:
+        return { }
+
+    versionstamps = { }
+
+    # Check if multiple stamps were fetched
+    if type(response) == list:
+        for stamp in response:
+            versionstamps[stamp[0]] = stamp[1]
+
+    else:
+        # Only one value was returned
+        versionstamps[response[0]] = response[1]
+
+    return versionstamps
+
+fetch_versionstamps

@@ -29,6 +29,7 @@ class Client:
         with insecure_channel(f'{self.ip_address}:{self.port}') as channel:
             stub = BlockchainStub(channel)
 
+            # Test connection
             while True:
                 try:
                     response = stub.getBlock(BlockRequest(index=123))

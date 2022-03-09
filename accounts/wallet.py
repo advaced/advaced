@@ -64,6 +64,30 @@ class Wallet:
             return False
 
 
+    @classmethod
+    def valid_versionstamp(cls, public_key: str, signature: str, version: str, timestamp: str) -> bool:
+        """Verify a versionstamp from a developer-key signature (Warning: This function does not check the validity of
+           the public-key as a developer key!).
+
+        :param public_key: Public-key of the wallet.
+        :type public_key: str (hex-digest)
+        :param signature: Signature of the data with private-key that is paired with the parsed public-key.
+        :type signature: str
+        :param version: Version to check.
+        :type version: str
+        :param timestamp: Timestamp when the protocol will be migrating or migrated to this version.
+        :type timestamp: str
+
+        :return: Wether the signature is valid or not.
+        :rtype: bool
+        """
+
+        if not cls.valid_signature(public_key, signature, (version + timestamp)):
+            return False
+
+        return True
+
+
     @staticmethod
     def get_public_key(private_key: str):
         """Returns the public-key of the parsed private-key.

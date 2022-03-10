@@ -17,10 +17,10 @@ from util.database.blockchain import (add_block, fetch_block, fetch_transaction_
                                       load_cache, fetch_versionstamps)
 
 class Blockchain:
-    def __init__(self, genesis_block=None, genesis_tx: [ Transaction ]=None):
+    def __init__(self, network='mainnet', genesis_block=None, genesis_tx: [ Transaction ]=None):
         # Set chain-versioning
         self.version = __version__
-        self.versionstamps = fetch_versionstamps()
+        self.versionstamps = fetch_versionstamps(network)
 
         # Check if a genesis-block was provided
         if genesis_block:

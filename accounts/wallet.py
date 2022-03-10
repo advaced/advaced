@@ -65,7 +65,7 @@ class Wallet:
 
 
     @classmethod
-    def valid_versionstamp(cls, public_key: str, signature: str, version: str, timestamp: str) -> bool:
+    def valid_versionstamp(cls, public_key: str, signature: str, version: str, timestamp: str, network: str) -> bool:
         """Verify a versionstamp from a developer-key signature (Warning: This function does not check the validity of
            the public-key as a developer key!).
 
@@ -77,12 +77,14 @@ class Wallet:
         :type version: str
         :param timestamp: Timestamp when the protocol will be migrating or migrated to this version.
         :type timestamp: str
+        :param network: The network where the version migrates or already migrated ('mainnet' or 'testnet').
+        :type network: str
 
         :return: Wether the signature is valid or not.
         :rtype: bool
         """
 
-        if not cls.valid_signature(public_key, signature, (version + timestamp)):
+        if not cls.valid_signature(public_key, signature, (version + timestamp + network)):
             return False
 
         return True

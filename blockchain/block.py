@@ -18,8 +18,11 @@ from blockchain import Transaction
 # Wallet
 from accounts import Wallet
 
+# Database handler
+from util.database.blockchain import fetch_block
+
 class Block:
-    def __init__(self, transactions=[], previous_block=None, validator=None, signature=None):
+    def __init__(self, transactions=[], previous_block=None, validator=None, signature=None, base_fee=True):
         """Set the block-values up.
 
         :param transactions: All transactions included into the block.
@@ -48,9 +51,29 @@ class Block:
         # Create the timestamp of the block
         self.timestamp = datetime.now()
 
-        self.base_fee = 1
-        # TODO -> Calculate the base-fee of a transaction (maybe with current
-        #         average block creation-time and node-count)
+
+        # Check if the base-fee should be calculated
+        if base_fee:
+            tx_len = 0
+            blocks_used = 0
+
+            # Fetch last 32 block dicts and add their tx-count
+            for x in range(self.index -32, self.index):
+                if x < 1:
+                    continue
+
+                # Fetch block from its index
+                block_dict = fetch_block(x)
+
+                # Set the values
+                tx_len += len(block_dict['tx'])
+                blocks_used += 1
+
+            #               min-fee * exp. growth^average tx count
+            self.base_fee = .000001 * 1.00001 ** (tx_len / blocks_used)
+
+        else:
+            self.base_fee = 1
 
         self.tx = transactions
 
@@ -168,8 +191,12 @@ class Block:
                 # Previous block was generated after current block
                 return False
 
-        # Check version
-        if not self.version == blockchain.version: # TODO -> Add versionstamp checks, not only for current version
+        # Check if version exists
+        if not blockchain.versionstamps[self.version]:
+            return False
+
+        # Check if version is allowed to use on this block
+        if datetime.strptime(blockchain.versionstamps[self.version], '%Y-%m-%d %H:%M:%S.%f') > self.timestamp:
             return False
 
         # Check timestamp
@@ -177,7 +204,23 @@ class Block:
             # Block is from the future
             return False
 
-        # TODO -> Add base-fee checker
+        tx_len = 0
+        blocks_used = 0
+
+        # Fetch last 32 block dicts and add their tx-count
+        for x in range(self.index -32, self.index):
+            if x < 1:
+                continue
+
+            # Fetch block from its index
+            block_dict = fetch_block(x)
+
+            # Set the values
+            tx_len += len(block_dict['tx'])
+            blocks_used += 1
+
+        if not self.base_fee == .000001 * 1.00001 ** (tx_len / blocks_used):
+            return False
 
         # Check if transactions are valid
         for transaction in self.tx:

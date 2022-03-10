@@ -311,7 +311,7 @@ def fetch_transactions(public_key: str, tx_type: str=None, is_sender: bool=None)
     return transactions
 
 
-def fetch_versionstamps(db=None):
+def fetch_versionstamps(network='mainnet', db=None):
     """Fetch the timestamps for the versions.
 
     :return: Dictionary that consists of versions as keys and timestamps as values
@@ -320,10 +320,10 @@ def fetch_versionstamps(db=None):
 
     # Check if a database-class was parsed
     if db:
-        response = db.fetchall('SELECT version, timestamp FROM versionstamps', { })
+        response = db.fetchall('SELECT version, timestamp FROM versionstamps WHERE network = :net', { 'net': network })
 
     else:
-        response = Database.fetchall_from_db('SELECT version, timestamp FROM versionstamps', { })
+        response = Database.fetchall_from_db('SELECT version, timestamp FROM versionstamps WHERE network = :net', { 'net': network })
 
     # Check if response exists
     if not response:
@@ -341,5 +341,3 @@ def fetch_versionstamps(db=None):
         versionstamps[response[0]] = response[1]
 
     return versionstamps
-
-fetch_versionstamps

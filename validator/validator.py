@@ -57,3 +57,16 @@ class Validator():
         :rtype: :py:class:`blockchain.Block`
         """
         pass
+
+        # TODO -> Calc coin age and select winner through merkle tree with first psoitioning from the bigness of the hash
+
+        # Selection scheme (with a merkle tree)
+        # block validator:              0x132F45
+        # winner:                        ^^^^
+        # next round:                   14_589                               |  11_653,7        (first round enemies + own coin age*.9^rank)
+        # winner:                       ^^^^           |                     |   ^^^^                |
+        # sum of coin_age*.9^rank:  8_200*.9^1 = 7_380 | 8_900*.9^2 = 7_209  | 12_300*.9^3 = 8_966.7 |  4_096*.9^4 = 2_687  <<< coin_age * pow(0.9, rank) >>>
+        # (1 against 2, 3 against 4 ... if the one with the biggest hash in decimal has no partner he gets sorted out)
+
+        # hash in decimal:          12_232             | 271_348             | 372_489_348_324       | 524_234_234_342
+        # validators:               0x132F45            |  0x3B45              |  0x43543B456           | 73457458AB234C

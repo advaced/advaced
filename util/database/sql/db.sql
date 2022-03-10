@@ -51,12 +51,11 @@ CREATE TABLE versionstamps (
     version VARCHAR(16) NOT NULL,
     timestamp DATETIME NOT NULL,
 
+    network VARCHAR(16) NOT NULL,
+
     public_key VARCHAR(128) NOT NULL,
     signature VARCHAR(128) NOT NULL
 );
-
--- Development tests
-INSERT INTO versionstamps VALUES('1.0.0', SYSDATE(), 'Public key', '2ff2f0840806c87247915b5dfa6f923d48ce3c9ad5988c97c6ef6e3840acec90121d1329480ac25b47ec903da95b9ece8b2260be46b18b730e5f2e730beee0bd');
 
 -- Developer public-keys
 CREATE TABLE dev_keys (
@@ -70,3 +69,10 @@ CREATE TABLE to_burn (
     -- The wrong data the block spread
     data TEXT NOT NULL
 );
+
+-- Development tests
+INSERT INTO versionstamps VALUES('1.0.0', '2022-03-10 10:07:17.687452', 'mainnet',
+ '0521b81c2857947d986722fffdd54ccda0114a635ff19d6bc725e080cf26c7f76b0185a8a87f257e86d9d722922dabcdfffe8e06281b1295a539a2a081e4d56a', -- pub key
+ '6d569b9363cd7467a16ea517576604cb3c6ebba4f101ed58fc7288b43701fae1726262fa8436307b5542996336222aec1fad25e21e093c7c2fb802c6e50d2350'); -- signature
+
+INSERT INTO dev_keys VALUES('0521b81c2857947d986722fffdd54ccda0114a635ff19d6bc725e080cf26c7f76b0185a8a87f257e86d9d722922dabcdfffe8e06281b1295a539a2a081e4d56a');

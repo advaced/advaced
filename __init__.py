@@ -54,6 +54,7 @@ OPTIONS = {
         'max': '--syncmode',
 
         'value': True,
+        'value-required': True,
 
         # full: everything | light: last 1_000 blocks
         'values': [ 'full', 'light' ],

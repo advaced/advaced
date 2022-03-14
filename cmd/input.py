@@ -164,6 +164,23 @@ def handle_input():
             # Value was not found in options, commands, command options and their values
             return False
 
+    # Check wich action the protocol should handle
+    if cmd == 'account':
+        if cmd_opt == 'create':
+            # TODO -> Create account (with input fields for the password etc.) and save it to the db
+            pass
+
+        elif cmd_opt == 'export':
+            # TODO -> Export account-data into file (ask for pwd)
+            pass
+
+        elif cmd_opt == 'import':
+            # TODO -> Import account-data from path (set new password)
+            pass
+
+        elif cmd_opt == 'list':
+            # TODO -> List accounts
+            pass
 
 
     return

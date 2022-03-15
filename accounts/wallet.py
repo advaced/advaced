@@ -162,6 +162,10 @@ class Wallet:
 
         if len(tx) > 1:
             for transaction in tx:
+                # Check if it is no real transaction
+                if transaction.sender == public_key and transaction.recipient == public_key:
+                    continue
+
                 # Check if the transaction comes from this wallet
                 if transaction.sender == public_key:
                     tx_coins -= transaction.amount + transaction.fee
@@ -169,6 +173,15 @@ class Wallet:
                 # Transaction goes to this wallet
                 else:
                     tx_coins += transaction.amount
+
+        elif len(tx) > 0:
+            # Check if the only transaction comes from this wallet
+            if tx[0].sender == public_key and not tx[0].recipient == public_key:
+                tx_coins -= tx[0].amount + tx[0].fee
+
+            # Transaction goes to this wallet
+            elif tx[0].recipient == public_key and not tx[0].sender == public_key:
+                tx_coins += tx[0].amount
 
         # Return total coins
         return claimed_coins + tx_coins - spend_on_stake

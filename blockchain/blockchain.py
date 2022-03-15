@@ -7,14 +7,15 @@ path.insert(0, os.path.join(os.getcwd(), '..'))
 from __init__ import __version__
 
 # Blockchain-classes
-from blockchain import Block, Transaction
+from blockchain import Transaction, Block
 
 # Wallet
 from accounts import Wallet
 
 # Database-handler
 from util.database.blockchain import (add_block, fetch_block, fetch_transaction_block_index, fetch_transactions,
-                                      load_cache, fetch_versionstamps)
+                                      fetch_versionstamps)
+from util.database.cache import load_cache
 
 class Blockchain:
     def __init__(self, network='mainnet', genesis_block=None, genesis_tx: [ Transaction ]=None):
@@ -29,7 +30,7 @@ class Blockchain:
 
         # Check if genesis-transactions were given
         elif genesis_tx:
-            genisis_block = self.create_genesis(genesis_tx if genesis_tx else [ ])
+            genesis_block = self.create_genesis(genesis_tx if genesis_tx else [ ])
 
             # Last block cache contains the last 100 blocks | Include genesis block into chain
             self.last_blocks = [ genesis_block ]
@@ -129,6 +130,8 @@ class Blockchain:
 
         # Currently there is nothing to cache
         if new_cache == True:
+            self.last_blocks = [ ]
+
             return True
 
         # Set the new cache

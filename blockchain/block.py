@@ -21,6 +21,7 @@ from accounts import Wallet
 # Database handler
 from util.database.blockchain import fetch_block
 
+
 class Block:
     def __init__(self, transactions=[], previous_block=None, validator=None, signature=None, base_fee=True):
         """Set the block-values up.
@@ -70,7 +71,7 @@ class Block:
                 blocks_used += 1
 
             #               min-fee * exp. growth^average tx count
-            self.base_fee = .000001 * 1.00001 ** (tx_len / blocks_used)
+            self.base_fee = .000001 * 1.00001 ** (tx_len / (blocks_used if blocks_used > 0 else 1))
 
         else:
             self.base_fee = 1
@@ -219,7 +220,7 @@ class Block:
             tx_len += len(block_dict['tx'])
             blocks_used += 1
 
-        if not self.base_fee == .000001 * 1.00001 ** (tx_len / blocks_used):
+        if not self.base_fee == .000001 * 1.00001 ** (tx_len / (blocks_used if blocks_used > 0 else 1)):
             return False
 
         # Check if transactions are valid

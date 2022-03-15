@@ -4,7 +4,7 @@ from os import getcwd
 path.insert(0, getcwd())
 
 # Transaction-class
-from blockchain import Block, Transaction
+from blockchain import Transaction
 
 # Database-connector
 from util.database.database import Database
@@ -46,8 +46,8 @@ def recreate_tx(tx_data):
     return {
         'sender': tx_data[0],
         'recipient': tx_data[1],
-        'amount': tx_data[2],
-        'fee': tx_data[3],
+        'amount': float(tx_data[2]),
+        'fee': float(tx_data[3]),
         'type': tx_data[4],
         'timestamp': tx_data[5],
         'hash': tx_data[6],
@@ -77,7 +77,6 @@ def add_block(block_dict: dict, overwrite: bool=False):
 
     # Check if the block includes transactions
     if type(block_dict['tx']) == list and len(block_dict['tx']) > 0:
-
         # Add transactions to database
         for transaction in block_dict['tx']:
             transaction['block_index'] = block_dict['index']
@@ -186,50 +185,6 @@ def fetch_transaction_block_index(tx: Transaction):
     return index
 
 
-def load_cache():
-    """Loads the last 100 blocks from the chain.
-
-    :return: Status when no blocks are available or fetchable
-    :rtype: bool
-    :return: List of blocks.
-    :rtype: :py:class:`blockchain.Block`
-    """
-    biggest_index = Database.fetchone_from_db('SELECT MAX(block_index) AS block_index FROM blockchain', {})
-
-    if not type(biggest_index) == int:
-        biggest_index = biggest_index[0]
-
-    # Check if there are any blocks
-    if not biggest_index:
-        return True
-
-    # Set the cache up
-    last_blocks = [ ]
-
-    if biggest_index == 1:
-        block_dict = fetch_block(1)
-
-        block = Block()
-        block.from_dict(block_dict)
-        last_blocks.append(block)
-
-        return last_blocks
-
-    # Go through all blocks that come into the cache
-    for x in reversed(range(biggest_index - 100, biggest_index)):
-        # Check if no more blocks can be fetched
-        if x < 0:
-            return last_blocks
-
-        block_dict = fetch_block(x)
-
-        block = Block()
-        block.from_dict(block_dict)
-        last_blocks.append(block)
-
-    return last_blocks
-
-
 def fetch_transactions(public_key: str, tx_type: str=None, is_sender: bool=None):
     """Fetch all transactions the account made in the past.
 
@@ -246,39 +201,45 @@ def fetch_transactions(public_key: str, tx_type: str=None, is_sender: bool=None)
     # Check if the type of the transaction is provided and no other specifications
     if tx_type and is_sender == None:
         # Fetch the transactions
-        transactions_data = Database.fetchall_from_db('SELECT * FROM transactions WHERE type = :type AND \
+        transactions_data = Database.fetchall_from_db('SELECT sender, recipient, amount, fee, type, timestamp, hash, \
+                                                       signature FROM transactions WHERE type = :type AND \
                                                        (sender = :public_key OR recipient = :public_key)',
                                                       { 'type': tx_type, 'public_key': public_key })
 
     # Check if the type of the transaction is provided and the account should be the sender
     elif tx_type and is_sender == True:
         # Fetch the transactions
-        transactions_data = Database.fetchall_from_db('SELECT * FROM transactions WHERE type = :type AND \
+        transactions_data = Database.fetchall_from_db('SELECT sender, recipient, amount, fee, type, timestamp, hash, \
+                                                       signature FROM transactions WHERE type = :type AND \
                                                        sender = :public_key',
                                                       { 'type': tx_type, 'public_key': public_key })
 
     # Check if the type of the transaction is provided and the account should be the sender
     elif tx_type and is_sender == False:
         # Fetch the transactions
-        transactions_data = Database.fetchall_from_db('SELECT * FROM transactions WHERE type = :type AND \
+        transactions_data = Database.fetchall_from_db('SELECT sender, recipient, amount, fee, type, timestamp, hash, \
+                                                       signature FROM transactions WHERE type = :type AND \
                                                        recipient = :public_key',
                                                       { 'type': tx_type, 'public_key': public_key })
 
     # Check if only the transactions should be fetched were the account is the sender
     elif is_sender == True:
         # Fetch the transactions
-        transactions_data = Database.fetchall_from_db('SELECT * FROM transactions WHERE sender = :public_key',
+        transactions_data = Database.fetchall_from_db('SELECT sender, recipient, amount, fee, type, timestamp, hash, \
+                                                       signature FROM transactions WHERE sender = :public_key',
                                                       { 'public_key': public_key })
 
     # Check if only the transactions should be fetched were the account is the recipient
     elif is_sender == True:
         # Fetch the transactions
-        transactions_data = Database.fetchall_from_db('SELECT * FROM transactions WHERE recipient = :public_key',
+        transactions_data = Database.fetchall_from_db('SELECT sender, recipient, amount, fee, type, timestamp, hash, \
+                                                       signature FROM transactions WHERE recipient = :public_key',
                                                       { 'public_key': public_key })
 
     # Fetch all transactions where this account is involved
     else:
-        transactions_data = Database.fetchall_from_db('SELECT * FROM transactions WHERE sender = :public_key OR \
+        transactions_data = Database.fetchall_from_db('SELECT sender, recipient, amount, fee, type, timestamp, hash, \
+                                                       signature FROM transactions WHERE sender = :public_key OR \
                                                        recipient = :public_key',
                                                       { 'type': tx_type, 'public_key': public_key })
 

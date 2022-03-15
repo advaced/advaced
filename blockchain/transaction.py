@@ -7,14 +7,14 @@ import json
 # Add to path
 from sys import path
 import os
-path.insert(0, os.path.join(os.getcwd(), '../'))
+path.insert(0, os.path.join(os.getcwd(), '..'))
 
 # Wallet
 from accounts import Wallet
 
 
 class Transaction:
-    def __init__(self, sender, recipient, amount, fee=None, tx_type='tx', signature=None):
+    def __init__(self, sender, recipient, amount, fee=0, tx_type='tx', tip=0):
         """Set the transaction-values up.
 
         :param sender: The public-key of the sender.
@@ -27,9 +27,8 @@ class Transaction:
         :type fee: int
         :param type: tx (transaction), stake (staking event), claim (claiming event), burn (expropriation event)
         :type type: str
-        :param signature: Signed hash with the private-key of the sender (or in some cases with the private-key
-                          of the recipient).
-        :type signature: str (hex-digest)
+        :param tip: Tip for the validators (if transactor wants to donate some money to get prioritized).
+        :type tip: int
         """
 
         self.sender = sender
@@ -37,10 +36,11 @@ class Transaction:
         self.amount = amount
 
         # Set the base-fee when no fee is set
-        self.fee = fee if fee else 1 # TODO -> Create a base-fee fetching-function
+        # Check if the base-fee should be calculated
+        self.fee = fee + tip
 
         self.type = tx_type
-        self.signature = signature
+        self.signature = None
 
         # Add a timestamp
         self.timestamp = datetime.now()
@@ -75,10 +75,10 @@ class Transaction:
             return False
 
         # Check if public-key is either the senders or the recipients key
-        if ((not self.sender == public_key and not self.type == 'tx' and not self.type == 'stake'
-            and not self.type == 'unstake' and not self.type == 'claim') or (not self.recipient == public_key
-            and not self.type == 'burn')):
-            return False
+        # if ((not self.sender == public_key and not self.type == 'tx' and not self.type == 'stake'
+        #     and not self.type == 'unstake' and not self.type == 'claim') or (not self.recipient == public_key
+        #     and not self.type == 'burn')):
+        #     return False
 
         # Set signature
         self.signature = Wallet.sign_data(private_key, self.hash)

@@ -9,6 +9,9 @@ from __init__ import __version__
 # Valid arguments
 from __init__ import OPTIONS, COMMANDS
 
+# Help
+from .help import print_help
+
 def handle_input():
     '''Handle the input and all its arguments
 
@@ -182,8 +185,54 @@ def handle_input():
             # TODO -> List accounts
             pass
 
+    elif cmd == 'export':
+        if cmd_opt == 'json':
+            # TODO -> Export blockchain-data into json-file
+            pass
 
-    return
+        elif cmd_opt == 'sqlite':
+            # TODO -> Export blockchain-data into sqlite-file
+            pass
+
+    elif cmd == 'import':
+        if cmd_opt == 'json':
+            # TODO -> Import blockchain-data from json-file
+            pass
+
+        elif cmd_opt == 'sqlite':
+            # TODO -> Import blockchain-data from sqlite-file
+            pass
+
+    elif cmd == 'transaction':
+        # TODO -> Create a transaction (ask for tx values)
+        pass
+
+    elif cmd == 'stake':
+        # TODO -> Create a stake transaction (ask for tx values)
+        pass
+
+    elif cmd == 'unstake':
+        # TODO -> Create an unstake transaction (ask for tx values)
+        pass
+
+    elif cmd == 'claim':
+        # TODO -> Create a claim transaction (ask for tx values)
+        pass
+
+    elif cmd == 'burn':
+        # TODO -> Create a burn transaction (ask for tx values)
+        pass
+
+    elif cmd == 'version':
+        # TODO -> Print out the version of the protocol
+        pass
+
+    elif cmd == 'version-audit':
+        # TODO -> Checks for newer versions and if this version has vulnerabilities or bugs
+        pass
+
+    elif cmd == 'help':
+        print_help(opt, opt_values)
 
 
 def is_option(value):

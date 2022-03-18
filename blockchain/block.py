@@ -1,7 +1,7 @@
 # SHA256 hash-algorithm
 from hashlib import sha3_256
 
-from datetime import datetime
+from datetime import datetime, timezone
 import json
 
 # Add to path
@@ -50,7 +50,7 @@ class Block:
         self.version = __version__
 
         # Create the timestamp of the block
-        self.timestamp = datetime.now()
+        self.timestamp = datetime.now(timezone.utc)
 
 
         # Check if the base-fee should be calculated
@@ -197,11 +197,11 @@ class Block:
             return False
 
         # Check if version is allowed to use on this block
-        if datetime.strptime(blockchain.versionstamps[self.version], '%Y-%m-%d %H:%M:%S.%f') > self.timestamp:
+        if datetime.strptime(blockchain.versionstamps[self.version], '%Y-%m-%d %H:%M:%S.%f').replace(tzinfo=timezone.utc) > self.timestamp:
             return False
 
         # Check timestamp
-        if self.timestamp > datetime.now():
+        if self.timestamp > datetime.now(timezone.utc):
             # Block is from the future
             return False
 
@@ -290,7 +290,7 @@ class Block:
                 return False
 
             # Create datetime-object from string
-            self.timestamp = datetime.strptime(block_dict['timestamp'], '%Y-%m-%d %H:%M:%S.%f')
+            self.timestamp = datetime.strptime(block_dict['timestamp'], '%Y-%m-%d %H:%M:%S.%f').replace(tzinfo=timezone.utc)
 
             self.previous_hash = block_dict['previous_hash']
 

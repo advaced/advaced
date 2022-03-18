@@ -290,7 +290,7 @@ class Block:
                 return False
 
             # Create datetime-object from string
-            self.timestamp = datetime.strptime(block_dict['timestamp'], '%Y-%m-%d %H:%M:%S.%f').replace(tzinfo=timezone.utc)
+            self.timestamp = datetime.strptime(block_dict['timestamp'], '%Y-%m-%d %H:%M:%S.%f%z').replace(tzinfo=timezone.utc)
 
             self.previous_hash = block_dict['previous_hash']
 

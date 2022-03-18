@@ -1,6 +1,8 @@
 from ecdsa import SigningKey, VerifyingKey, SECP256k1
 from hashlib import sha3_512
 
+from datetime import datetime, timezone
+
 
 class Wallet:
     def __init__(self, public_key: VerifyingKey=None, private_key: SigningKey=None):
@@ -156,6 +158,14 @@ class Wallet:
             for transaction in stake_tx:
                 spend_on_stake += transaction.amount + transaction.fee
 
+        # Fetch the coins that the account spend on unstaking fees
+        unstake_tx = blockchain.fetch_transactions(public_key, tx_type='unstake', is_sender=False)
+        spend_on_unstaking_fees = 0
+
+        if len(unstake_tx) > 0:
+            for transaction in stake_tx:
+                spend_on_unstaking_fees += transaction.fee
+
         # Fetch the coins that the wallet received and send as a tx
         tx = blockchain.fetch_transactions(public_key, tx_type='tx')
         tx_coins = 0
@@ -199,7 +209,15 @@ class Wallet:
         :return: Amount of coins in the wallet.
         :rtype: float
         """
-        return 0
+        # Fetch the coins that the account claimed
+        claims_tx = blockchain.fetch_transactions(public_key, tx_type='claim', is_sender=False)
+        claims = 0
+
+        if len(claims_tx) > 0:
+            for transaction in claims_tx:
+                claims += transaction.amount - transaction.fee
+
+        return claims
 
 
     @staticmethod
@@ -214,11 +232,35 @@ class Wallet:
         :return: Amount of staked coins of the wallet.
         :rtype: float
         """
-        pass
+        # Fetch the staked, unstaked and the burned coins of this wallet
+        stake_tx = blockchain.fetch_transactions(public_key, tx_type='stake', is_sender=False)
+        unstake_tx = blockchain.fetch_transactions(public_key, tx_type='unstake', is_sender=True)
+        burn_tx = blockchain.fetch_transactions(public_key, tx_type='burn', is_sender=True)
+
+        staked = 0
+        unstaked = 0
+        burned = 0
+
+        if len(stake_tx) > 0:
+            # Go through the stake transactions
+            for transaction in stake_tx:
+                staked += transaction.amount
+
+        if len(unstake_tx) > 0:
+            # Go through the unstake transactions
+            for transaction in unstake_tx:
+                unstaked += transaction.amount
+
+        if len(burn_tx) > 0:
+            # Go through the burn transactions
+            for transaction in burn_tx:
+                burned += transaction.amount
+
+        return staked - unstaked - burned
 
 
-    @staticmethod
-    def score(public_key: str, blockchain) -> float:
+    @classmethod
+    def score(cls, public_key: str, blockchain) -> float:
         """Returns the staking worth of the wallet.
 
         :param public_key: Public-key of the wallet.
@@ -230,4 +272,80 @@ class Wallet:
                  getting chosen to verify a block).
         :rtype: float
         """
-        pass
+
+        # Fetch the staked, unstaked and the burned coins of this wallet
+        stake_tx = blockchain.fetch_transactions(public_key, tx_type='stake', is_sender=False)
+
+        # Check if the account has any stake
+        if len(stake_tx) < 0:
+            return 0
+
+        # Bring the transactions into a better format
+        stakes = [ ]
+
+        for tx in stake_tx:
+            stakes.append(( tx.amount, tx.timestamp.timestamp() ))
+
+        stakes.sort(key=lambda x: x[1])
+
+        # Remove unstaked stake
+        unstake_tx = blockchain.fetch_transactions(public_key, tx_type='unstake', is_sender=True)
+
+        if len(unstake_tx) > 1:
+            for tx in unstake_tx:
+                amount_left = tx.amount
+
+                while amount_left > 0:
+                    # Check if something really went wrong (if this occurres the stake of the account is negative and not allowed)
+                    if len(stakes) == 0:
+                        return 0
+
+                    # Check if unstaking amount is bigger than the last staked amount
+                    if amount_left > stakes[-1][0]:
+                        amount_left -= stakes[-1][0]
+                        stakes.pop(-1)
+
+                    else:
+                        stakes[-1][0] -= amount_left
+                        break
+
+        # Remove burned stake
+        burn_tx = blockchain.fetch_transactions(public_key, tx_type='burn', is_sender=True)
+
+        if len(burn_tx) > 1:
+            for tx in burn_tx:
+                amount_left = tx.amount
+
+                while amount_left > 0:
+                    # Check if something really went wrong (if this occurres the stake of the account is negative and not allowed)
+                    if len(stakes) == 0:
+                        return 0
+
+                    # Check if unstaking amount is bigger than the last staked amount
+                    if amount_left > stakes[-1][0]:
+                        amount_left -= stakes[-1][0]
+                        stakes.pop(-1)
+
+                    else:
+                        stakes[-1][0] -= amount_left
+                        break
+
+        # Check if any stake is left
+        if len(stakes) == 0:
+            return 0
+
+        # Calculate the coin age
+        coin_age = 0
+
+        for stake in stakes:
+            age = datetime.now(timezone.utc).timestamp() - stake[1] \
+                  if datetime.now(timezone.utc).timestamp() - stake[1] < 2_764_800 else 2_764_800 # 32 days in seconds
+
+            coin_age += stake[0] * 1.000_000_104_051 ** age # (Increases 33.333% at maximum)
+
+        # Check if the coin age is above the maximum
+        if coin_age > 65_536:
+            #     2 ** 16
+            return 65_536
+
+        return coin_age

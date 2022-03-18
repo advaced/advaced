@@ -1,7 +1,7 @@
 # SHA3-256 hash-algorithm
 from hashlib import sha3_256
 
-from datetime import datetime
+from datetime import datetime, timezone
 import json
 
 # Add to path
@@ -35,15 +35,23 @@ class Transaction:
         self.recipient = recipient
         self.amount = amount
 
-        # Set the base-fee when no fee is set
-        # Check if the base-fee should be calculated
-        self.fee = fee + tip
+        # Set the bfee
+        if tx_type == 'tx':
+            self.fee = fee + tip
+
+        elif tx_type == 'stake' or tx_type == 'unstake' or tx_type == 'claim':
+            # Cut the fee in half
+            self.fee = fee / 2 + tip
+
+        else:
+            # Is a burn transaction
+            self.fee = fee / 8
 
         self.type = tx_type
         self.signature = None
 
         # Add a timestamp
-        self.timestamp = datetime.now()
+        self.timestamp = datetime.now(timezone.utc)
 
 
     @property
@@ -129,7 +137,7 @@ class Transaction:
             return False
 
         # Check if transaction is signed for the future
-        if self.timestamp > datetime.now():
+        if self.timestamp > datetime.now(timezone.utc):
             return False
 
         # Only for not in-chain transactions
@@ -186,11 +194,12 @@ class Transaction:
             if dict_data['signature']:
                 self.signature = dict_data['signature']
 
-            self.timestamp = datetime.strptime(dict_data['timestamp'], '%Y-%m-%d %H:%M:%S.%f')
+            self.timestamp = datetime.strptime(dict_data['timestamp'], '%Y-%m-%d %H:%M:%S.%f%z').replace(tzinfo=timezone.utc)
 
         # Return the status
         except:
             return False
+
 
         return True
 
@@ -229,7 +238,7 @@ class Transaction:
             if dict_data['signature']:
                 self.signature = dict_data['signature']
 
-            self.timestamp = datetime.strptime(dict_data['timestamp'], '%d-%m-%y %H:%M:%S')
+            self.timestamp = datetime.strptime(dict_data['timestamp'], '%d-%m-%y %H:%M:%S').replace(tzinfo=timezone.utc)
 
         # Return the status
         except KeyError:

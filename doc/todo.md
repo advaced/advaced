@@ -23,10 +23,10 @@ Here is a list of the things we are currently working on.
 - [x] Create a working blockchain
   - [x] Add a block
   - [x] Add a chain
-- [ ] Add a validation process (proof-of-stake)
-  - [ ] Add coin-staking
-  - [ ] Add validator selection
-  - [ ] Add validation
-  - [ ] Add network agreement and disagreement (so that the validator would earn coins if he is right and would lose his stake if he is wrong or wants to attack the network)
+- [x] Add a validation process (proof-of-stake)
+  - [x] Add coin-staking
+  - [x] Add validator selection
+  - [x] Add validation
+  - [x] Add network agreement and disagreement (so that the validator would earn coins if he is right and would lose his stake if he is wrong or wants to attack the network)
 - [ ] Test and improve the whole protocol
 - [ ] Create the first version of the cryptocurrency

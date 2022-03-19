@@ -3,16 +3,43 @@ from threading import Thread, Event
 from time import sleep as time_sleep
 
 class Processor():
-    def __init__(self, start=False):
+    def __init__(self, private_key, start=False):
         self.stop_event = Event()
         self.thread = Thread(target=self.run)
 
 
     def run(self):
+        # 1. Synchronize with other nodes (via rpc server of these nodes)
+
+
+        # 2. Setup the validator
+
+
+        # 3. Check if enough VAC is staked to become a validator
+
+
+        # 4. Advertise to the network
+
+
+        # 5. Connect to other nodes
+
+
+        # 6. Slide into validating process
+
+
+        # 7. Listen to new data and validate blocks
         while not self.stop_event.is_set():
             pass
+            #
 
             # TODO -> Add the processor
+
+
+        # 8. Cut the socket and rpc connections
+
+
+        # 9. Turn all processes off
+
 
 
     def start(self):

@@ -1,7 +1,7 @@
 # Add to path
 from sys import path, argv
-import os
-path.insert(0, os.path.join(os.getcwd(), '../'))
+from os.path import dirname, abspath, join
+path.insert(0, join(dirname(abspath(__file__)), '..'))
 
 # Project version
 from __init__ import __version__

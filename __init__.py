@@ -25,6 +25,12 @@ CLIENT_PORT = 67676
 # RPC connection endpoint
 RPC_PORT = 87878
 
+# Name of the interface
+NAME = 'advaced - the advaced protocol command line interface'
+
+# Command line interface usage
+USAGE = 'advaced [OPTIONS] COMMAND [COMMAND-OPTIONS]'
+
 # Set options-dict up
 OPTIONS = {
     # Wich network to use

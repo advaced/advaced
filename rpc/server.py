@@ -2,8 +2,11 @@
 from concurrent.futures import ThreadPoolExecutor
 from grpc import server as grpc_server
 
+# Threading
+from threading import Thread, Event
+
 # Blockchain protobuf
-from blockchain_pb2 import Transaction, Block, Transactions, Blocks
+from blockchain_pb2 import Transaction, Block, Transactions, Blocks, Success
 from blockchain_pb2_grpc import BlockchainServicer, add_BlockchainServicer_to_server as add_blockchain
 
 # Wallet protobuf
@@ -14,9 +17,9 @@ from wallet_pb2_grpc import WalletServicer, add_WalletServicer_to_server as add_
 from time import sleep
 
 # Add to path
-from sys import path
-import os
-path.insert(0, os.path.join(os.getcwd(), '..'))
+from sys import path, argv
+from os.path import dirname, abspath, join
+path.insert(0, join(dirname(abspath(__file__)), '..'))
 
 # Project version
 from __init__ import RPC_PORT
@@ -106,11 +109,11 @@ class BlockchainListener(BlockchainServicer):
 
 
     def addTransaction(self, request, context):
-        pass
+        Success(True)
 
 
     def addTransactions(self, request, context):
-        pass
+        Success(True)
 
 
 class WalletListener(WalletServicer):

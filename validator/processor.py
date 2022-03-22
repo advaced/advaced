@@ -7,6 +7,9 @@ class Processor():
         self.stop_event = Event()
         self.thread = Thread(target=self.run)
 
+        if start:
+            self.start()
+
 
     def run(self):
         # 1. Synchronize with other nodes (via rpc server of these nodes)
@@ -78,7 +81,7 @@ class Processor():
         # if self.stop_event.is_set():
         #     return False
 
-        # Stop the database-handler
+        # Stop the thread
         self.stop_event.set()
 
         return True

@@ -14,11 +14,34 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0cwallet.proto\x12\nblockchainb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0cwallet.proto\x12\nblockchain\"#\n\rWalletRequest\x12\x12\n\npublic_key\x18\x01 \x01(\t\" \n\x0eWalletResponse\x12\x0e\n\x06\x61mount\x18\x01 \x01(\x01\x32\xd8\x02\n\x06Wallet\x12\x41\n\x08getCoins\x12\x19.blockchain.WalletRequest\x1a\x1a.blockchain.WalletResponse\x12\x41\n\x08getStake\x12\x19.blockchain.WalletRequest\x1a\x1a.blockchain.WalletResponse\x12\x42\n\tgetClaims\x12\x19.blockchain.WalletRequest\x1a\x1a.blockchain.WalletResponse\x12\x41\n\x08getBurns\x12\x19.blockchain.WalletRequest\x1a\x1a.blockchain.WalletResponse\x12\x41\n\x08getScore\x12\x19.blockchain.WalletRequest\x1a\x1a.blockchain.WalletResponseb\x06proto3')
 
 
 
+_WALLETREQUEST = DESCRIPTOR.message_types_by_name['WalletRequest']
+_WALLETRESPONSE = DESCRIPTOR.message_types_by_name['WalletResponse']
+WalletRequest = _reflection.GeneratedProtocolMessageType('WalletRequest', (_message.Message,), {
+  'DESCRIPTOR' : _WALLETREQUEST,
+  '__module__' : 'wallet_pb2'
+  # @@protoc_insertion_point(class_scope:blockchain.WalletRequest)
+  })
+_sym_db.RegisterMessage(WalletRequest)
+
+WalletResponse = _reflection.GeneratedProtocolMessageType('WalletResponse', (_message.Message,), {
+  'DESCRIPTOR' : _WALLETRESPONSE,
+  '__module__' : 'wallet_pb2'
+  # @@protoc_insertion_point(class_scope:blockchain.WalletResponse)
+  })
+_sym_db.RegisterMessage(WalletResponse)
+
+_WALLET = DESCRIPTOR.services_by_name['Wallet']
 if _descriptor._USE_C_DESCRIPTORS == False:
 
   DESCRIPTOR._options = None
+  _WALLETREQUEST._serialized_start=28
+  _WALLETREQUEST._serialized_end=63
+  _WALLETRESPONSE._serialized_start=65
+  _WALLETRESPONSE._serialized_end=97
+  _WALLET._serialized_start=100
+  _WALLET._serialized_end=444
 # @@protoc_insertion_point(module_scope)

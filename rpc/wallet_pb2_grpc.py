@@ -2,3 +2,197 @@
 """Client and server classes corresponding to protobuf-defined services."""
 import grpc
 
+import wallet_pb2 as wallet__pb2
+
+
+class WalletStub(object):
+    """Missing associated documentation comment in .proto file."""
+
+    def __init__(self, channel):
+        """Constructor.
+
+        Args:
+            channel: A grpc.Channel.
+        """
+        self.getCoins = channel.unary_unary(
+                '/blockchain.Wallet/getCoins',
+                request_serializer=wallet__pb2.WalletRequest.SerializeToString,
+                response_deserializer=wallet__pb2.WalletResponse.FromString,
+                )
+        self.getStake = channel.unary_unary(
+                '/blockchain.Wallet/getStake',
+                request_serializer=wallet__pb2.WalletRequest.SerializeToString,
+                response_deserializer=wallet__pb2.WalletResponse.FromString,
+                )
+        self.getClaims = channel.unary_unary(
+                '/blockchain.Wallet/getClaims',
+                request_serializer=wallet__pb2.WalletRequest.SerializeToString,
+                response_deserializer=wallet__pb2.WalletResponse.FromString,
+                )
+        self.getBurns = channel.unary_unary(
+                '/blockchain.Wallet/getBurns',
+                request_serializer=wallet__pb2.WalletRequest.SerializeToString,
+                response_deserializer=wallet__pb2.WalletResponse.FromString,
+                )
+        self.getScore = channel.unary_unary(
+                '/blockchain.Wallet/getScore',
+                request_serializer=wallet__pb2.WalletRequest.SerializeToString,
+                response_deserializer=wallet__pb2.WalletResponse.FromString,
+                )
+
+
+class WalletServicer(object):
+    """Missing associated documentation comment in .proto file."""
+
+    def getCoins(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def getStake(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def getClaims(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def getBurns(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def getScore(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+
+def add_WalletServicer_to_server(servicer, server):
+    rpc_method_handlers = {
+            'getCoins': grpc.unary_unary_rpc_method_handler(
+                    servicer.getCoins,
+                    request_deserializer=wallet__pb2.WalletRequest.FromString,
+                    response_serializer=wallet__pb2.WalletResponse.SerializeToString,
+            ),
+            'getStake': grpc.unary_unary_rpc_method_handler(
+                    servicer.getStake,
+                    request_deserializer=wallet__pb2.WalletRequest.FromString,
+                    response_serializer=wallet__pb2.WalletResponse.SerializeToString,
+            ),
+            'getClaims': grpc.unary_unary_rpc_method_handler(
+                    servicer.getClaims,
+                    request_deserializer=wallet__pb2.WalletRequest.FromString,
+                    response_serializer=wallet__pb2.WalletResponse.SerializeToString,
+            ),
+            'getBurns': grpc.unary_unary_rpc_method_handler(
+                    servicer.getBurns,
+                    request_deserializer=wallet__pb2.WalletRequest.FromString,
+                    response_serializer=wallet__pb2.WalletResponse.SerializeToString,
+            ),
+            'getScore': grpc.unary_unary_rpc_method_handler(
+                    servicer.getScore,
+                    request_deserializer=wallet__pb2.WalletRequest.FromString,
+                    response_serializer=wallet__pb2.WalletResponse.SerializeToString,
+            ),
+    }
+    generic_handler = grpc.method_handlers_generic_handler(
+            'blockchain.Wallet', rpc_method_handlers)
+    server.add_generic_rpc_handlers((generic_handler,))
+
+
+ # This class is part of an EXPERIMENTAL API.
+class Wallet(object):
+    """Missing associated documentation comment in .proto file."""
+
+    @staticmethod
+    def getCoins(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/blockchain.Wallet/getCoins',
+            wallet__pb2.WalletRequest.SerializeToString,
+            wallet__pb2.WalletResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def getStake(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/blockchain.Wallet/getStake',
+            wallet__pb2.WalletRequest.SerializeToString,
+            wallet__pb2.WalletResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def getClaims(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/blockchain.Wallet/getClaims',
+            wallet__pb2.WalletRequest.SerializeToString,
+            wallet__pb2.WalletResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def getBurns(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/blockchain.Wallet/getBurns',
+            wallet__pb2.WalletRequest.SerializeToString,
+            wallet__pb2.WalletResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def getScore(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/blockchain.Wallet/getScore',
+            wallet__pb2.WalletRequest.SerializeToString,
+            wallet__pb2.WalletResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

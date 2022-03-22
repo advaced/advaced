@@ -2,9 +2,13 @@
 from concurrent.futures import ThreadPoolExecutor
 from grpc import server as grpc_server
 
-# Protobuf
+# Blockchain protobuf
 from blockchain_pb2 import Transaction, Block, Transactions, Blocks
 from blockchain_pb2_grpc import BlockchainServicer, add_BlockchainServicer_to_server as add_blockchain
+
+# Wallet protobuf
+from wallet_pb2 import WalletResponse
+from wallet_pb2_grpc import WalletServicer, add_WalletServicer_to_server as add_wallet
 
 # Dev log
 from time import sleep
@@ -17,7 +21,7 @@ path.insert(0, os.path.join(os.getcwd(), '..'))
 # Project version
 from __init__ import RPC_PORT
 
-class Listener(BlockchainServicer):
+class BlockchainListener(BlockchainServicer):
     def __init__(self, port=None):
         """Initialize the server-values.
 
@@ -55,12 +59,12 @@ class Listener(BlockchainServicer):
         :rtype: :py:object:`blockchain_pb2.Blocks`
         """
 
-        # TODO -> Fetch blocks that were requested
+        # TODO -> Fetch the blocks that were requested
 
         return Blocks(blocks=[ Block(index=1, previousHash='23234342', version='1.0.0', timestamp='123', baseFee=2,
         tx=[ Transaction(sender='sdf', recipient='sdwf', amount=12, fee=23, type='tx', timestamp='1234',
         hash='123231wef', signature='asdf'), Transaction(sender='sdf', recipient='sdwf', amount=12, fee=23,
-        type='tx', timestamp='1234', hash='123231wef', signature='asdf')], hash='fasd', signature='asfd'), 
+        type='tx', timestamp='1234', hash='123231wef', signature='asdf')], hash='fasd', signature='asfd'),
         Block(index=1, previousHash='23234342', version='1.0.0', timestamp='123', baseFee=2,
         tx=[ Transaction(sender='sdf', recipient='sdwf', amount=12, fee=23, type='tx', timestamp='1234',
         hash='123231wef', signature='asdf'), Transaction(sender='sdf', recipient='sdwf', amount=12, fee=23,
@@ -81,7 +85,7 @@ class Listener(BlockchainServicer):
 
         return Transaction(sender='sdf', recipient='sdwf', amount=12, fee=23, type='tx', timestamp='1234',
         hash='123231wef', signature='asdf')
-    
+
 
     def getTransactions(self, request, context):
         """Fetch transactions from the given values.
@@ -97,28 +101,136 @@ class Listener(BlockchainServicer):
 
         return Transactions(tx=[ Transaction(sender='sdf', recipient='sdwf', amount=12, fee=23, type='tx',
         timestamp='1234', hash='123231wef', signature='asdf'), Transaction(sender='sdf', recipient='sdwf',
-        amount=12, fee=23, type='tx', timestamp='1234', hash='123231wef', signature='asdf') ]) 
+        amount=12, fee=23, type='tx', timestamp='1234', hash='123231wef', signature='asdf') ])
 
 
-def run():
-    server = grpc_server(ThreadPoolExecutor(max_workers=1))
-    add_blockchain(Listener(), server)
+    def addTransaction(self, request, context):
+        pass
 
-    server.add_insecure_port(f'[::]:{RPC_PORT}')
-    server.start()
 
-    try:
-        while True:
-            # Dev log
-            print(f'runnin')
+    def addTransactions(self, request, context):
+        pass
 
-            sleep(16)
 
-    except KeyboardInterrupt:
-        # Dev log
-        print('shuttin down')
+class WalletListener(WalletServicer):
+    def getCoins(self, request, context):
+        return WalletResponse(0)
+
+
+    def getStake(self, request, context):
+        return WalletResponse(0)
+
+
+    def getScore(self, request, context):
+        return WalletResponse(0)
+
+
+    def getClaims(self, request, context):
+        return WalletResponse(0)
+
+
+    def getBurns(self, request, context):
+        return WalletResponse(0)
+
+
+class RPCServer():
+    def __init__(self, port=None, start=False):
+        """Initialize the server-values.
+
+        :param port: Port to listen on.
+        :type port: int
+        :param start: Start automatically or not
+        :type start: bool
+        """
+        self.port = port if port else RPC_PORT
+
+        self.stop_event = Event()
+        self.thread = Thread(target=self.run)
+
+        if start:
+            self.start()
+
+
+    def run(self):
+        server = grpc_server(ThreadPoolExecutor(max_workers=1))
+
+        add_blockchain(BlockchainListener(), server)
+        add_wallet(WalletListener(), server)
+
+        server.add_insecure_port(f'[::]:{RPC_PORT}')
+        server.start()
+
+        while not self.stop_event.is_set():
+            sleep(.1)
 
         server.stop(0)
 
-if __name__ == '__main__':
-    run()
+
+    def start(self):
+        """Starts the rpc server.
+
+        :return: Status if server start was successful.
+        :rtype: bool
+        """
+
+        # Check if database is already running
+        if self.thread.is_alive():
+            return False
+
+        # Check if stop-event is set
+        if self.stop_event.is_set():
+            self.stop_event = Event()
+            self.db_thread = Thread(target=self.run)
+
+        # Start the database-handler
+        self.thread.start()
+
+        return True
+
+
+    def stop(self):
+        """Stops the rpc server.
+
+        :return: Status if stop was successful.
+        :rtype: bool
+        """
+        # Check if database is not running
+        if not self.thread.is_alive():
+            return False
+
+        # Check if stop-event is set
+        # if self.stop_event.is_set():
+        #     return False
+
+        # Stop the server
+        self.stop_event.set()
+
+        return True
+
+
+    def restart(self):
+        """Restarts the rpc server.
+
+        :return: Status if restart was successful.
+        :rtype: bool
+        """
+
+        # Check wether the thread is running or not
+        if not self.thread.is_alive():
+            return False
+
+        # Stop the server
+        self.stop()
+
+        # Wait until stop is injected
+        while self.thread.is_alive():
+            time_sleep(.01)
+
+        # Start the server
+        self.start()
+
+        # Check if restart was not successful
+        if not self.thread.is_alive():
+            return False
+
+        return True

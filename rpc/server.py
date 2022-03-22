@@ -21,6 +21,7 @@ path.insert(0, os.path.join(os.getcwd(), '..'))
 # Project version
 from __init__ import RPC_PORT
 
+
 class BlockchainListener(BlockchainServicer):
     def __init__(self, port=None):
         """Initialize the server-values.

@@ -8,8 +8,6 @@ service Wallet {
     rpc getStake (WalletRequest) returns (WalletResponse);
 
     rpc getClaims (WalletRequest) returns (WalletResponse);
-    rpc getBurns (WalletRequest) returns (WalletResponse);
-
     rpc getScore (WalletRequest) returns (WalletResponse);
 }
 

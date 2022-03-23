@@ -1,11 +1,32 @@
+# Processor execution
 from threading import Thread, Event
+from queue import Queue
 
 from time import sleep as time_sleep
+
+# Add to path
+from sys import path
+from os.path import dirname, abspath, join
+path.insert(0, join(dirname(abspath(__file__)), '..'))
+
+# Database handler
+from util.database.database import Database
+
+# Blockchain classes
+from blockchain import Block, Transaction
+from blockchain.blockchain import Blockchain
+
+# RPC server
+from rpc import RPCServer
+
 
 class Processor():
     def __init__(self, private_key, start=False):
         self.stop_event = Event()
         self.thread = Thread(target=self.run)
+
+        # Input of the rpc server and the other nodes
+        self.input_queue = Queue()
 
         if start:
             self.start()
@@ -27,6 +48,7 @@ class Processor():
         # 5. Connect to other nodes
 
 
+
         # 6. Slide into validating process
 
 
@@ -44,7 +66,6 @@ class Processor():
         # 9. Turn all processes off
 
 
-
     def start(self):
         """Starts the processor-thread.
 
@@ -60,6 +81,15 @@ class Processor():
         if self.stop_event.is_set():
             self.stop_event = Event()
             self.db_thread = Thread(target=self.run)
+
+        # Start database handler
+        self.database = Database()
+
+        # Initialize the blockchain
+        self.blockchain = Blockchain()
+
+        # Start the rpc server
+        self.rpc_server = RPCServer(blockchain, start=True, db_q=self.database.db_q)
 
         # Start the database-handler
         self.thread.start()

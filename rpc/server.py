@@ -24,15 +24,22 @@ path.insert(0, join(dirname(abspath(__file__)), '..'))
 # Project version
 from __init__ import RPC_PORT
 
+# Project modules
+from accounts import Wallet
+from blockchain import Block, Transaction
+from blockchain.blockchain import Blockchain
+
 
 class BlockchainListener(BlockchainServicer):
-    def __init__(self, port=None):
-        """Initialize the server-values.
+    def __init__(self, blockchain, db_q=None):
+        """Initialize the required values.
 
-        :param port: Port to listen on.
-        :type port: int
+        :param blockchain: Chain to fetch from
+        :type blockchain: :py:class:`blockchain.Blockchain`
         """
-        self.port = port if port else RPC_PORT
+        self.blockchain = blockchain
+
+        self.db_q = db_q
 
 
     def getBlock(self, request, context):
@@ -109,65 +116,84 @@ class BlockchainListener(BlockchainServicer):
 
 
     def addTransaction(self, request, context):
-        Success(True)
+        Success(success=True)
 
 
     def addTransactions(self, request, context):
-        Success(True)
+        Success(success=True)
 
 
 class WalletListener(WalletServicer):
+    def __init__(self, blockchain, db_q=None):
+        """Initialize the required values.
+
+        :param blockchain: Chain to fetch from
+        :type blockchain: :py:class:`blockchain.Blockchain`
+        """
+        self.blockchain = blockchain
+
+        self.db_q = db_q
+
     def getCoins(self, request, context):
-        return WalletResponse(0)
+        coins = Wallet.coins(request.public_key, self.blockchain)
+
+        # Check if coins were fetched correctly
+        if not coins:
+            return WalletResponse(amount=-1)
+
+        return WalletResponse(amount=coins)
 
 
     def getStake(self, request, context):
-        return WalletResponse(0)
+        stake = Wallet.stake(request.public_key, self.blockchain)
+
+        # Check if coins were fetched correctly
+        if not stake:
+            return WalletResponse(amount=-1)
+
+        return WalletResponse(amount=stake)
 
 
     def getScore(self, request, context):
-        return WalletResponse(0)
+        score = Wallet.score(request.public_key, self.blockchain)
+
+        # Check if coins were fetched correctly
+        if not score:
+            return WalletResponse(amount=-1)
+
+        return WalletResponse(amount=score)
 
 
     def getClaims(self, request, context):
-        return WalletResponse(0)
+        claims = Wallet.claims(request.public_key, self.blockchain)
 
+        # Check if coins were fetched correctly
+        if not claims:
+            return WalletResponse(amount=-1)
 
-    def getBurns(self, request, context):
-        return WalletResponse(0)
+        return WalletResponse(amount=claims)
 
 
 class RPCServer():
-    def __init__(self, port=None, start=False):
+    def __init__(self, blockchain, port=None, start=False, db_q=None):
         """Initialize the server-values.
 
+        :param blockchain: Chain to fetch from
+        :type blockchain: :py:class:`blockchain.Blockchain`
         :param port: Port to listen on.
         :type port: int
         :param start: Start automatically or not
         :type start: bool
         """
         self.port = port if port else RPC_PORT
+        self.blockchain = blockchain
 
-        self.stop_event = Event()
-        self.thread = Thread(target=self.run)
+        self.server = None
+
+        self.db_q = db_q
 
         if start:
             self.start()
-
-
-    def run(self):
-        server = grpc_server(ThreadPoolExecutor(max_workers=1))
-
-        add_blockchain(BlockchainListener(), server)
-        add_wallet(WalletListener(), server)
-
-        server.add_insecure_port(f'[::]:{RPC_PORT}')
-        server.start()
-
-        while not self.stop_event.is_set():
-            sleep(.1)
-
-        server.stop(0)
 
 
     def start(self):
@@ -176,18 +202,16 @@ class RPCServer():
         :return: Status if server start was successful.
         :rtype: bool
         """
-
-        # Check if database is already running
-        if self.thread.is_alive():
+        if self.server:
             return False
 
-        # Check if stop-event is set
-        if self.stop_event.is_set():
-            self.stop_event = Event()
-            self.db_thread = Thread(target=self.run)
+        self.server = grpc_server(ThreadPoolExecutor(max_workers=10))
 
-        # Start the database-handler
-        self.thread.start()
+        add_blockchain(BlockchainListener(self.blockchain), self.server, db_q=self.db_q)
+        add_wallet(WalletListener(self.blockchain), self.server, db_q=self.db_q)
+
+        self.server.add_insecure_port(f'[::]:{RPC_PORT}')
+        self.server.start()
 
         return True
 
@@ -198,16 +222,11 @@ class RPCServer():
         :return: Status if stop was successful.
         :rtype: bool
         """
-        # Check if database is not running
-        if not self.thread.is_alive():
+        if not self.server:
             return False
 
-        # Check if stop-event is set
-        # if self.stop_event.is_set():
-        #     return False
-
-        # Stop the server
-        self.stop_event.set()
+        self.server.stop(0)
+        self.server = None
 
         return True
 
@@ -218,23 +237,14 @@ class RPCServer():
         :return: Status if restart was successful.
         :rtype: bool
         """
+        success = self.stop()
 
-        # Check wether the thread is running or not
-        if not self.thread.is_alive():
+        if not success:
             return False
 
-        # Stop the server
-        self.stop()
-
-        # Wait until stop is injected
-        while self.thread.is_alive():
-            time_sleep(.01)
-
-        # Start the server
         self.start()
 
-        # Check if restart was not successful
-        if not self.thread.is_alive():
+        if not success:
             return False
 
         return True

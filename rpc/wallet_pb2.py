@@ -14,7 +14,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0cwallet.proto\x12\nblockchain\"#\n\rWalletRequest\x12\x12\n\npublic_key\x18\x01 \x01(\t\" \n\x0eWalletResponse\x12\x0e\n\x06\x61mount\x18\x01 \x01(\x01\x32\xd8\x02\n\x06Wallet\x12\x41\n\x08getCoins\x12\x19.blockchain.WalletRequest\x1a\x1a.blockchain.WalletResponse\x12\x41\n\x08getStake\x12\x19.blockchain.WalletRequest\x1a\x1a.blockchain.WalletResponse\x12\x42\n\tgetClaims\x12\x19.blockchain.WalletRequest\x1a\x1a.blockchain.WalletResponse\x12\x41\n\x08getBurns\x12\x19.blockchain.WalletRequest\x1a\x1a.blockchain.WalletResponse\x12\x41\n\x08getScore\x12\x19.blockchain.WalletRequest\x1a\x1a.blockchain.WalletResponseb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0cwallet.proto\x12\nblockchain\"#\n\rWalletRequest\x12\x12\n\npublic_key\x18\x01 \x01(\t\" \n\x0eWalletResponse\x12\x0e\n\x06\x61mount\x18\x01 \x01(\x01\x32\x95\x02\n\x06Wallet\x12\x41\n\x08getCoins\x12\x19.blockchain.WalletRequest\x1a\x1a.blockchain.WalletResponse\x12\x41\n\x08getStake\x12\x19.blockchain.WalletRequest\x1a\x1a.blockchain.WalletResponse\x12\x42\n\tgetClaims\x12\x19.blockchain.WalletRequest\x1a\x1a.blockchain.WalletResponse\x12\x41\n\x08getScore\x12\x19.blockchain.WalletRequest\x1a\x1a.blockchain.WalletResponseb\x06proto3')
 
 
 
@@ -43,5 +43,5 @@ if _descriptor._USE_C_DESCRIPTORS == False:
   _WALLETRESPONSE._serialized_start=65
   _WALLETRESPONSE._serialized_end=97
   _WALLET._serialized_start=100
-  _WALLET._serialized_end=444
+  _WALLET._serialized_end=377
 # @@protoc_insertion_point(module_scope)

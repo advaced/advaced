@@ -5,6 +5,11 @@ from grpc import server as grpc_server
 # Threading
 from threading import Thread, Event
 
+# Add to path
+from sys import path
+from os.path import dirname, abspath, join
+path.insert(0, join(dirname(abspath(__file__))))
+
 # Blockchain protobuf
 from blockchain_pb2 import Transaction, Block, Transactions, Blocks, Success
 from blockchain_pb2_grpc import BlockchainServicer, add_BlockchainServicer_to_server as add_blockchain
@@ -17,7 +22,7 @@ from wallet_pb2_grpc import WalletServicer, add_WalletServicer_to_server as add_
 from time import sleep
 
 # Add to path
-from sys import path, argv
+from sys import path
 from os.path import dirname, abspath, join
 path.insert(0, join(dirname(abspath(__file__)), '..'))
 
@@ -26,7 +31,8 @@ from __init__ import RPC_PORT
 
 # Project modules
 from accounts import Wallet
-from blockchain import Block, Transaction
+from blockchain.transaction import Transaction
+from blockchain.block import Block
 from blockchain.blockchain import Blockchain
 
 
@@ -207,8 +213,8 @@ class RPCServer():
 
         self.server = grpc_server(ThreadPoolExecutor(max_workers=10))
 
-        add_blockchain(BlockchainListener(self.blockchain), self.server, db_q=self.db_q)
-        add_wallet(WalletListener(self.blockchain), self.server, db_q=self.db_q)
+        add_blockchain(BlockchainListener(self.blockchain, db_q=self.db_q), self.server)
+        add_wallet(WalletListener(self.blockchain, db_q=self.db_q), self.server)
 
         self.server.add_insecure_port(f'[::]:{RPC_PORT}')
         self.server.start()

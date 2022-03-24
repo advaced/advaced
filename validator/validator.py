@@ -1,13 +1,14 @@
 # Add to path
 from sys import path
-import os
-path.insert(0, os.path.join(os.getcwd(), '../'))
+from os.path import dirname, abspath, join
+path.insert(0, join(dirname(abspath(__file__)), '..'))
 
-# Blockchain
-from blockchain import Block
+# Blockchains
+from blockchain.block import Block
 
 # Signatures
 from accounts import Wallet
+
 
 class Validator():
     def __init__(self, private_key):

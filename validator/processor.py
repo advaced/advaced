@@ -9,19 +9,28 @@ from sys import path
 from os.path import dirname, abspath, join
 path.insert(0, join(dirname(abspath(__file__)), '..'))
 
+# Validator
+from validator.validator import Validator
+
 # Database handler
 from util.database.database import Database
 
 # Blockchain classes
-from blockchain import Block, Transaction
+from blockchain.transaction import Transaction
+from blockchain.block import Block
 from blockchain.blockchain import Blockchain
 
 # RPC server
-from rpc import RPCServer
+from rpc.server import RPCServer
+
+# Wallet
+from accounts import Wallet
 
 
 class Processor():
     def __init__(self, private_key, start=False):
+        self.private_key = private_key
+
         self.stop_event = Event()
         self.thread = Thread(target=self.run)
 
@@ -37,16 +46,17 @@ class Processor():
 
 
         # 2. Setup the validator
+        self.validator = Validator(self.private_key)
 
 
         # 3. Check if enough VAC is staked to become a validator
-
+        if Wallet.coins(self.validator.wallet.public_key, self.blockchain) < 4_096:
+            return False
 
         # 4. Advertise to the network
 
 
         # 5. Connect to other nodes
-
 
 
         # 6. Slide into validating process
@@ -89,7 +99,7 @@ class Processor():
         self.blockchain = Blockchain()
 
         # Start the rpc server
-        self.rpc_server = RPCServer(blockchain, start=True, db_q=self.database.db_q)
+        self.rpc_server = RPCServer(self.blockchain, start=True, db_q=self.database.db_q)
 
         # Start the database-handler
         self.thread.start()

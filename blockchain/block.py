@@ -6,14 +6,14 @@ import json
 
 # Add to path
 from sys import path
-import os
-path.insert(0, os.path.join(os.getcwd(), '..'))
+from os.path import dirname, abspath, join
+path.insert(0, join(dirname(abspath(__file__)), '..'))
 
 # Project version
 from __init__ import __version__
 
 # Blockchain-classes
-from blockchain import Transaction
+from blockchain.transaction import Transaction
 
 # Wallet
 from accounts import Wallet

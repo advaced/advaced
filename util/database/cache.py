@@ -1,10 +1,10 @@
 # Add to path
 from sys import path
-from os import getcwd
-path.insert(0, getcwd())
+from os.path import dirname, abspath, join
+path.insert(0, join(dirname(abspath(__file__)), '..'))
 
 # Block class to recreate cache
-from blockchain import Block
+from blockchain.block import Block
 
 # Database-connector
 from util.database.blockchain import fetch_block

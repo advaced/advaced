@@ -7,7 +7,8 @@ path.insert(0, os.path.join(os.getcwd(), '..'))
 from __init__ import __version__
 
 # Blockchain-classes
-from blockchain import Transaction, Block
+from blockchain.transaction import Transaction
+from blockchain.block import Block
 
 # Wallet
 from accounts import Wallet

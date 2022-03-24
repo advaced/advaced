@@ -4,7 +4,7 @@ from os import getcwd
 path.insert(0, getcwd())
 
 # Transaction-class
-from blockchain import Transaction
+from blockchain.transaction import Transaction
 
 # Database-connector
 from util.database.database import Database

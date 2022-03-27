@@ -119,7 +119,7 @@ def fetch_block(index: int):
     """Fetch block from its index.
 
     :param index: Index of the block to fetch.
-    :type idnex: int
+    :type index: int
 
     :return: Fetch was not succesful.
     :rtype: bool
@@ -137,6 +137,52 @@ def fetch_block(index: int):
     # Fetch the blocks transactions
     tx = Database.fetchall_from_db('SELECT sender, recipient, amount, fee, type, timestamp, hash, signature FROM \
                                     transactions WHERE block_index = :index', { 'index': index })
+    tx_dicts = [ ]
+
+    # Check if there are any transactions in the block
+    if tx:
+        # Check if multiple transactions are inclueded into the block
+        if type(tx) == list:
+
+            # Go through all transactions and add them to a dict-list
+            for transaction in tx:
+                tx_dicts.append(recreate_tx(transaction))
+
+        # Only one transaction was fetched
+        else:
+            tx_dicts.append(recreate_tx(transaction))
+
+    # Convert block to dictionary format
+    block_dict = recreate_block(block_data)
+
+    # Add the transactions to the block
+    block_dict['tx'] = tx_dicts
+
+    return block_dict
+
+
+def fetch_block_from_timestamp(timestamp):
+    """Fetch block from its index.
+
+    :param timestamp: Index of the block to fetch.
+    :type timestamp: :py:class`datetime.datetime`
+
+    :return: Fetch was not succesful.
+    :rtype: bool
+    :return: Dict-data of the block.
+    :rtype: dict
+    """
+
+    # Fetch the block
+    block_data = Database.fetchone_from_db('SELECT * FROM blockchain WHERE block_index = :timestamp', { 'timestamp': timestamp })
+
+    # Check if the response of the database is correct
+    if not block_data:
+        return False
+
+    # Fetch the blocks transactions
+    tx = Database.fetchall_from_db('SELECT sender, recipient, amount, fee, type, timestamp, hash, signature FROM \
+                                    transactions WHERE block_index = :index', { 'index': block_data[0] })
     tx_dicts = [ ]
 
     # Check if there are any transactions in the block

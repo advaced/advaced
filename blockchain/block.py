@@ -66,6 +66,10 @@ class Block:
                 # Fetch block from its index
                 block_dict = fetch_block(x)
 
+                # Check if block could not be fetched
+                if not block_dict:
+                    continue
+
                 # Set the values
                 tx_len += len(block_dict['tx'])
                 blocks_used += 1
@@ -111,17 +115,6 @@ class Block:
 
         return sha3_256((str(self.index) + self.version + str(self.timestamp) + str(self.base_fee) + str(self.tx_dict) \
                        + self.validator if self.validator else "").encode()).hexdigest()
-
-
-    @property
-    def score(self) -> float:
-        """Returns the staking and hash worth of the block.
-
-        :return: Block score (the higher the score the higher is the probability of
-                 getting chosen to verify a block).
-        :rtype: float
-        """
-        pass
 
 
     def sign_block(self, private_key):
@@ -200,8 +193,9 @@ class Block:
         if datetime.strptime(blockchain.versionstamps[self.version], '%Y-%m-%d %H:%M:%S.%f').replace(tzinfo=timezone.utc) > self.timestamp:
             return False
 
+
         # Check timestamp
-        if self.timestamp > datetime.now(timezone.utc):
+        if self.timestamp > datetime.now(timezone.utc) and in_chain:
             # Block is from the future
             return False
 

@@ -45,9 +45,9 @@ OPTIONS = {
     },
 
     'testnet': {
-        'min': '-mn',
-        'standard': '--mainnet',
-        'max': '--mainnetwork',
+        'min': '-tn',
+        'standard': '--testnet',
+        'max': '--testnetwork',
 
         'value': False,
 

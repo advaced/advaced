@@ -76,7 +76,7 @@ class Blockchain:
                     return False
 
                 # Check if the block and its transactions are valid
-                if not block.is_valid(self, True):
+                if not block.is_valid(self, in_chain=True):
                     return False
 
         return True
@@ -141,7 +141,7 @@ class Blockchain:
         return True
 
 
-    def add_block(self, block: Block):
+    def add_block(self, block: Block, genesis=False):
         """Adds block to the blockchain.
 
         :param block: The block to add.
@@ -162,8 +162,9 @@ class Blockchain:
         if not block.is_valid(self):
             return False
 
-        # Add block to chain
-        self.last_blocks.insert(0, block)
+        # Add block to chain if it is not the genesis block
+        if not genesis:
+            self.last_blocks.insert(0, block)
 
         # Push block to database
         success = add_block(block.to_dict())

@@ -109,10 +109,10 @@ class Blockchain:
         :rtype: :py:class:`blockchain.Block`
         """
 
-        return Block(tx_data if tx_data else [ ], None,
+        return Block(tx_data if tx_data else [ ],
                     # Not a real public-key and no real signature
-                    '00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
-                    '00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000')
+                    validator='00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+                    signature='00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000')
 
 
     def load_last_blocks(self):
@@ -221,10 +221,10 @@ class Blockchain:
                 return False
 
             # Set block up
-            block_data = fetch_block(index)
+            block_dict = fetch_block(index)
 
             block = Block()
-            block.from_dict(block_data)
+            block.from_dict(block_dict)
 
             # Check if the block was fethced successful
             if not block:

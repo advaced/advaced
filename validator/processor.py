@@ -4,7 +4,7 @@ from queue import Queue
 
 # Scheduling
 from time import sleep as time_sleep
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta
 
 # Add to path
 from sys import path
@@ -83,7 +83,12 @@ class Processor():
 
             # Create own block
             block = Block(tx, self.blockchain.last_blocks[0])
-            block.timestamp = self.blockchain.last_blocks[0].timestamp + timedelta(0, 32)
+
+            if self.blockchain.last_blocks[0].timestamp > datetime.now(timezone.utc):
+                block.timestamp = self.blockchain.last_blocks[0].timestamp + timedelta(0, 32)
+
+            else:
+                block.timestamp = datetime.now(timezone.utc)
 
             # Sign the block
             block, success = self.validator.validate_block(block)
@@ -233,3 +238,7 @@ class Processor():
             return False
 
         return True
+
+
+processor = Processor(private_key='5f83c097f06fa806dfd4023b429b704335df5c5377695bd5d85cd03950ce5b70') # , genesis_validation=True)
+processor.start()

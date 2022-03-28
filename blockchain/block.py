@@ -44,8 +44,7 @@ class Block:
         # Set values for the genesis-block
         else:
             self.index = 1
-            self.previous_hash = \
-            '0000000000000000000000000000000000000000000000000000000000000000'
+            self.previous_hash = '0000000000000000000000000000000000000000000000000000000000000000'
 
         self.version = __version__
 
@@ -85,6 +84,7 @@ class Block:
         self.validator = validator
         self.signature = signature
 
+
     @property
     def tx_dict(self) -> list:
         """Creates dictionary-list version of the included transactions.
@@ -100,6 +100,7 @@ class Block:
 
         return tx_list
 
+
     @property
     def hash(self) -> str:
         """Calculates the hash of the block with the SHA3_256 hash-algorithm.
@@ -114,7 +115,7 @@ class Block:
             print("WARNING!: Block incomplete, hash is not completely right!")
 
         return sha3_256((str(self.index) + self.version + str(self.timestamp) + str(self.base_fee) + str(self.tx_dict) \
-                       + self.validator if self.validator else "").encode()).hexdigest()
+                       + (self.validator if self.validator else "")).encode()).hexdigest()
 
 
     def sign_block(self, private_key):
@@ -169,21 +170,30 @@ class Block:
 
         # Fetch the previous block
         if in_chain:
-            previous_block = blockchain.fetch_block(self.index -1)
+            block_dict = blockchain.fetch_block(index=self.index - 1)
+
+            if block_dict:
+                previous_block = Block()
+                previous_block.from_dict(block_dict)
 
         else:
             previous_block = blockchain.last_blocks[0]
 
         # Check if they could fetch the previous-block
         if previous_block:
-            # Check if the previous hash matches with the previous blocks hash
-            if not self.previous_hash == previous_block.hash:
-                return False
+            if not previous_block.index == 1:
+                # Check if the previous hash matches with the previous blocks hash
+                if not self.previous_hash == previous_block.hash:
+                    return False
 
-            # Compare the timestamps
-            if self.timestamp < previous_block.timestamp:
-                # Previous block was generated after current block
-                return False
+                # Compare the timestamps
+                if self.timestamp < previous_block.timestamp:
+                    # Previous block was generated after current block
+                    return False
+
+            else:
+                # TODO -> Check if previous block is the same as the genesis block
+                pass
 
         # Check if version exists
         if not blockchain.versionstamps[self.version]:
@@ -289,11 +299,11 @@ class Block:
             self.previous_hash = block_dict['previous_hash']
 
             # Check if the validator is included in the json-data
-            if block_dict['validator']:
+            if 'validator' in block_dict:
                 self.validator = block_dict['validator']
 
             # Check if the signature is included in the json-data
-            if block_dict['signature']:
+            if 'signature' in block_dict:
                 self.signature = block_dict['signature']
 
             # Check if the hashes are the same

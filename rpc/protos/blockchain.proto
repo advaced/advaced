@@ -35,9 +35,6 @@ message TransactionRequest {
     optional string sender = 1;
     optional string recipient = 2;
 
-    optional uint64 amount = 3;
-
-    optional string type = 5;
     optional string timestamp = 6;
 
     optional string hash = 7;

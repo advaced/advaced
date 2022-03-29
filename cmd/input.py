@@ -1,3 +1,5 @@
+from getpass import getpass
+
 # Add to path
 from sys import path, argv
 from os.path import dirname, abspath, join
@@ -11,6 +13,9 @@ from __init__ import OPTIONS, COMMANDS
 
 # Help
 from .help import print_help
+
+# Validation
+from validator.processor import Processor
 
 def handle_input():
     '''Handle the input and all its arguments
@@ -183,6 +188,30 @@ def handle_input():
 
         elif cmd_opt == 'list':
             # TODO -> List accounts
+            pass
+
+    elif cmd == 'run':
+        if cmd_opt == 'validate':
+            password = getpass(prompt=f'Password for {cmd_opt_value}: ')
+
+            # TODO -> Find user account and get private-key from password and the stored "hash"
+            private_key = '5f83c097f06fa806dfd4023b429b704335df5c5377695bd5d85cd03950ce5b70'
+
+            # Iniitialize the processor and start it
+            processor = Processor(private_key=private_key)
+
+            try:
+                processor.start()
+
+            except:
+                processor.stop()
+
+        elif cmd_opt == 'synchronize':
+            # TODO -> Sync the chain with the others
+            pass
+
+        elif cmd_opt == 'serve':
+            # TODO -> Run the rpc server and frequently sync with the chain
             pass
 
     elif cmd == 'export':

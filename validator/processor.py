@@ -84,7 +84,7 @@ class Processor():
             # Create own block
             block = Block(tx, self.blockchain.last_blocks[0])
 
-            if self.blockchain.last_blocks[0].timestamp > datetime.now(timezone.utc):
+            if self.blockchain.last_blocks[0].timestamp + timedelta(0, 32) > datetime.now(timezone.utc):
                 block.timestamp = self.blockchain.last_blocks[0].timestamp + timedelta(0, 32)
 
             else:
@@ -238,7 +238,3 @@ class Processor():
             return False
 
         return True
-
-
-processor = Processor(private_key='5f83c097f06fa806dfd4023b429b704335df5c5377695bd5d85cd03950ce5b70') # , genesis_validation=True)
-processor.start()

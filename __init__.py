@@ -123,6 +123,41 @@ COMMANDS = {
         'description': 'Manage accounts'
     },
 
+    'run': {
+        'standard': 'run',
+
+        'cmd-opts': {
+            'validate': {
+                'standard': 'validate',
+
+                'value': True,
+                'value-name': 'account-name',
+                'value-required': False,
+
+                'description': 'Run the proof-of-stake process'
+            },
+
+            'synchronize': {
+                'min': 'sync',
+                'standard': 'synchronize',
+
+                'value': False,
+
+                'description': 'Synchronize local blockchain with blockchain of the network'
+            },
+
+            'serve': {
+                'standard': 'serve',
+
+                'value': False,
+
+                'description': 'Share data of the blockchain as rpc server'
+            }
+        },
+
+        'description': 'Execute a process'
+    },
+
     # Data archiving handler
     'export': {
         'min': 'exp',

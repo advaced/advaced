@@ -11,7 +11,7 @@ from os.path import dirname, abspath, join
 path.insert(0, join(dirname(abspath(__file__))))
 
 # Blockchain protobuf
-from blockchain_pb2 import Transaction, Block, Transactions, Blocks, Success
+from blockchain_pb2 import Transaction as RPCTransaction, Block as RPCBlock, Transactions, Blocks, Success
 from blockchain_pb2_grpc import BlockchainServicer, add_BlockchainServicer_to_server as add_blockchain
 
 # Wallet protobuf
@@ -34,6 +34,8 @@ from accounts import Wallet
 from blockchain.transaction import Transaction
 from blockchain.block import Block
 from blockchain.blockchain import Blockchain
+
+from util.database.blockchain import fetch_block, fetch_block_from_timestamp
 
 
 class BlockchainListener(BlockchainServicer):
@@ -58,12 +60,32 @@ class BlockchainListener(BlockchainServicer):
         :rtype: :py:object:`blockchain_pb2.Block`
         """
 
-        # TODO -> Fetch block that was requested
+        if request.index:
+            block_dict = fetch_block(request.index)
 
-        return Block(index=1, previousHash='23234342', version='1.0.0', timestamp='123', baseFee=2,
-        tx=[ Transaction(sender='sdf', recipient='sdwf', amount=12, fee=23, type='tx', timestamp='1234',
-        hash='123231wef', signature='asdf'), Transaction(sender='sdf', recipient='sdwf', amount=12, fee=23,
-        type='tx', timestamp='1234', hash='123231wef', signature='asdf')], hash='fasd', signature='asfd')
+        elif request.timestamp:
+            block_dict = fetch_block_from_timestamp(request.timestamp)
+
+        elif request.hash and request.signature:
+            block_dict = fetch_block_from_signature(request.signature, request.hash)
+
+        # Check if fetch was successful
+        if not block_dict:
+            return RPCBlock(index=0, previousHash='', version='', timestamp='',
+                            baseFee=0, tx=[ ], hash='', signature='')
+
+        tx = [ ]
+
+        for transaction in block_dict['tx']:
+            tx.append(RPCTransaction(sender=transaction['sender'], recipient=transaction['recipient'],
+                                     amount=transaction['amount'], fee=transaction['fee'], type=transaction['tx_type'],
+                                     timestamp=transaction['timestamp'], hash=transaction['hash'],
+                                     signature=transaction['signature']))
+
+        return RPCBlock(index=block_dict['index'], previousHash=block_dict['previous_hash'],
+                     version=block_dict['version'], timestamp=str(block_dict['timestamp']),
+                     baseFee=block_dict['base_fee'], tx=tx, hash=block_dict['hash'],
+                     signature=block_dict['signature'])
 
 
     def getBlocks(self, request, context):

@@ -36,7 +36,6 @@ CREATE TABLE accounts (
     name VARCHAR(32) UNIQUE NOT NULL,
     password_hash VARCHAR(128) NOT NULL,
 
-    public_key VARCHAR(128) NOT NULL,
     private_key_hash VARCHAR(128) NOT NULL -- sault: password
 );
 

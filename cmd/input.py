@@ -17,6 +17,13 @@ from .help import print_help
 # Validation
 from validator.processor import Processor
 
+# Server
+from rpc.server import RPCServer
+
+# Blockchain
+from blockchain.blockchain import Blockchain
+
+
 def handle_input():
     '''Handle the input and all its arguments
 
@@ -212,7 +219,19 @@ def handle_input():
 
         elif cmd_opt == 'serve':
             # TODO -> Run the rpc server and frequently sync with the chain
-            pass
+
+            # Setup rpc server
+            blockchain = Blockchain()
+            rpc_server = RPCServer(blockchain)
+
+            # Serve and frequently sync the chain
+            try:
+                rpc_server.start()
+
+                # TODO -> Sync the chain
+
+            except:
+                rpc_server.stop()
 
     elif cmd == 'export':
         if cmd_opt == 'json':

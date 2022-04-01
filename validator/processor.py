@@ -40,8 +40,11 @@ class Processor():
         # Input of the rpc server and the other nodes
         self.input_queue = Queue()
 
-        # Transactions to add to chain
+        # Transactions to add to chain (list of:py::class:`blockchain.Transaction`)
         self.tx = [ ]
+
+        # Temporary blocks for the next epoch
+        self.next_epoch = [ ]
 
         if start:
             self.start()
@@ -102,16 +105,49 @@ class Processor():
 
                 return False
 
-            # Add block to own temp blocks
+            # Add blocks fetcched previously
+            self.validator.temp_blocks = self.next_epoch
+            self.next_epoch = [ ]
+
+            # Add block to own temp block
             self.validator.temp_blocks.append(block)
 
-            # Emit block to other nodes
+            # TODO -> Emit block to other nodes
 
 
-            # Collect all temporary blocks, until time is over (32 seconds)
+            # Collect all temporary blocks and transactions from queue, until time is over (32 seconds)
             while datetime.now().timestamp() <= self.blockchain.last_blocks[0].timestamp.timestamp() + 32:
-                # Collect blocks and transactions for the next round
-                time_sleep(.05)
+                if not self.input_queue.empty():
+                    # Fetch item from queue
+                    item_queue = self.input_queue.get()
+
+                    # Check if the item is a transaction
+                    if item_queue['type'] == 'tx':
+                        self.tx.append(item_queue['data'])
+
+                    # Check if the item is a block
+                    elif item_queue['type'] == 'block':
+                            # Check if the block is for this round
+                            if item_queue['data'].index == block.index:
+                                exists = False
+
+                                for tmp in self.validator.temp_blocks:
+                                    if tmp.validator == item_queue['data'].validator:
+                                        exists = True
+                                        break
+
+                                if not exists:
+                                    self.validator.temp_blocks.append(item_queue['data'])
+
+                            # Check if the block is for the next round
+                            elif item_queue['data'].index == block.index + 1:
+                                self.next_epoch.append(item_queue['data'])
+
+                        # TODO -> Share the block with other nodes
+
+                else:
+                    time_sleep(.01)
+
 
             # Select the winner block of the temporary blocks
             winner_block = self.validator.select_winner(self.blockchain, True)
@@ -129,6 +165,9 @@ class Processor():
                 return False
 
             print('Added block successfully:', winner_block.index)
+
+            # Reset temporary blocks
+            self.validator.temp_blocks = [ ]
 
             # Every 10 blocks check if whole chain is valid
             if winner_block.index % 10 == 0:
@@ -180,7 +219,7 @@ class Processor():
             self.blockchain = Blockchain(genesis_tx=[test_tx])
 
         # Start the rpc server
-        self.rpc_server = RPCServer(self.blockchain, start=True, db_q=self.database.db_q)
+        self.rpc_server = RPCServer(self.blockchain, processor_queue=self.input_queue, start=True, db_q=self.database.db_q)
 
         # Start the database-handler
         self.thread.start()

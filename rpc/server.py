@@ -100,14 +100,37 @@ class BlockchainListener(BlockchainServicer):
 
         # TODO -> Fetch the blocks that were requested
 
-        return Blocks(blocks=[ Block(index=1, previousHash='23234342', version='1.0.0', timestamp='123', baseFee=2,
-        tx=[ Transaction(sender='sdf', recipient='sdwf', amount=12, fee=23, type='tx', timestamp='1234',
-        hash='123231wef', signature='asdf'), Transaction(sender='sdf', recipient='sdwf', amount=12, fee=23,
-        type='tx', timestamp='1234', hash='123231wef', signature='asdf')], hash='fasd', signature='asfd'),
-        Block(index=1, previousHash='23234342', version='1.0.0', timestamp='123', baseFee=2,
-        tx=[ Transaction(sender='sdf', recipient='sdwf', amount=12, fee=23, type='tx', timestamp='1234',
-        hash='123231wef', signature='asdf'), Transaction(sender='sdf', recipient='sdwf', amount=12, fee=23,
-        type='tx', timestamp='1234', hash='123231wef', signature='asdf')], hash='fasd', signature='asfd') ])
+        blocks = [ ]
+
+        for req_block in request:
+            if req_block.index:
+                block_dict = fetch_block(req_block.index)
+
+            elif req_block.timestamp:
+                block_dict = fetch_block_from_timestamp(req_block.timestamp)
+
+            elif req_block.hash and req_block.signature:
+                block_dict = fetch_block_from_signature(req_block.signature, req_block.hash)
+
+            # Check if fetch was successful
+            if not block_dict:
+                blocks.append(RPCBlock(index=0, previousHash='', version='', timestamp='',
+                                       baseFee=0, tx=[ ], hash='', signature=''))
+
+            tx = [ ]
+
+            for transaction in block_dict['tx']:
+                tx.append(RPCTransaction(sender=transaction['sender'], recipient=transaction['recipient'],
+                                        amount=transaction['amount'], fee=transaction['fee'], type=transaction['tx_type'],
+                                        timestamp=transaction['timestamp'], hash=transaction['hash'],
+                                        signature=transaction['signature']))
+
+            blocks.append(RPCBlock(index=block_dict['index'], previousHash=block_dict['previous_hash'],
+                          version=block_dict['version'], timestamp=str(block_dict['timestamp']),
+                          baseFee=block_dict['base_fee'], tx=tx, hash=block_dict['hash'],
+                          signature=block_dict['signature']))
+
+        return Blocks(blocks=blocks)
 
 
     def getTransaction(self, request, context):
@@ -144,11 +167,51 @@ class BlockchainListener(BlockchainServicer):
 
 
     def addTransaction(self, request, context):
-        Success(success=True)
+        # Recreate the transaction
+        tx = Transaction('', '', 0)
+        tx.from_dict({
+            'sender': request.sender,
+            'recipient': request.recipient,
+
+            'amount': request.amount,
+            'fee': request.fee,
+
+            'type': request.type,
+            'timestamp': request.timestamp,
+
+            'hash': request.hash,
+            'signature': request.signature
+        })
+
+        # Put it to the processor-queue
+        input_queue.put({'type': 'tx', 'data': tx})
+
+        return Success(success=True)
 
 
     def addTransactions(self, request, context):
-        Success(success=True)
+        # Go through all provided transactions
+        for transaction in request.transactions:
+            # Recreate the transaction
+            tx = Transaction('', '', 0)
+            tx.from_dict({
+                'sender': transaction.sender,
+                'recipient': transaction.recipient,
+
+                'amount': transaction.amount,
+                'fee': transaction.fee,
+
+                'type': transaction.type,
+                'timestamp': transaction.timestamp,
+
+                'hash': transaction.hash,
+                'signature': transaction.signature
+            })
+
+            # Put it to the processor-queue
+            input_queue.put({'type': 'tx', 'data': tx})
+
+        return Success(success=True)
 
 
 class WalletListener(WalletServicer):
@@ -203,7 +266,7 @@ class WalletListener(WalletServicer):
 
 
 class RPCServer():
-    def __init__(self, blockchain, port=None, start=False, db_q=None):
+    def __init__(self, blockchain, processor_queue, port=None, start=False, db_q=None):
         """Initialize the server-values.
 
         :param blockchain: Chain to fetch from
@@ -215,6 +278,9 @@ class RPCServer():
         """
         self.port = port if port else RPC_PORT
         self.blockchain = blockchain
+
+        global input_queue
+        input_queue = processor_queue
 
         self.server = None
 
@@ -233,7 +299,7 @@ class RPCServer():
         if self.server:
             return False
 
-        self.server = grpc_server(ThreadPoolExecutor(max_workers=10))
+        self.server = grpc_server(ThreadPoolExecutor(max_workers=1))
 
         add_blockchain(BlockchainListener(self.blockchain, db_q=self.db_q), self.server)
         add_wallet(WalletListener(self.blockchain, db_q=self.db_q), self.server)

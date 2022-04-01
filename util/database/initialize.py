@@ -60,7 +60,6 @@ def create_database(overwrite=False):
     connection.close()
 
     # except:
-    #     print('schade')
     #     return False
 
     return True

@@ -34,6 +34,16 @@ class BlockchainStub(object):
                 request_serializer=blockchain__pb2.TransactionRequest.SerializeToString,
                 response_deserializer=blockchain__pb2.Transactions.FromString,
                 )
+        self.addTransaction = channel.unary_unary(
+                '/blockchain.Blockchain/addTransaction',
+                request_serializer=blockchain__pb2.Transaction.SerializeToString,
+                response_deserializer=blockchain__pb2.Success.FromString,
+                )
+        self.addTransactions = channel.unary_unary(
+                '/blockchain.Blockchain/addTransactions',
+                request_serializer=blockchain__pb2.Transactions.SerializeToString,
+                response_deserializer=blockchain__pb2.Success.FromString,
+                )
 
 
 class BlockchainServicer(object):
@@ -63,6 +73,18 @@ class BlockchainServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def addTransaction(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def addTransactions(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_BlockchainServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -85,6 +107,16 @@ def add_BlockchainServicer_to_server(servicer, server):
                     servicer.getTransactions,
                     request_deserializer=blockchain__pb2.TransactionRequest.FromString,
                     response_serializer=blockchain__pb2.Transactions.SerializeToString,
+            ),
+            'addTransaction': grpc.unary_unary_rpc_method_handler(
+                    servicer.addTransaction,
+                    request_deserializer=blockchain__pb2.Transaction.FromString,
+                    response_serializer=blockchain__pb2.Success.SerializeToString,
+            ),
+            'addTransactions': grpc.unary_unary_rpc_method_handler(
+                    servicer.addTransactions,
+                    request_deserializer=blockchain__pb2.Transactions.FromString,
+                    response_serializer=blockchain__pb2.Success.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -161,5 +193,39 @@ class Blockchain(object):
         return grpc.experimental.unary_unary(request, target, '/blockchain.Blockchain/getTransactions',
             blockchain__pb2.TransactionRequest.SerializeToString,
             blockchain__pb2.Transactions.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def addTransaction(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/blockchain.Blockchain/addTransaction',
+            blockchain__pb2.Transaction.SerializeToString,
+            blockchain__pb2.Success.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def addTransactions(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/blockchain.Blockchain/addTransactions',
+            blockchain__pb2.Transactions.SerializeToString,
+            blockchain__pb2.Success.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

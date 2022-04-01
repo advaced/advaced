@@ -7,7 +7,8 @@ path.insert(0, os.path.join(os.getcwd(), '..'))
 from __init__ import __version__
 
 # Blockchain-classes
-from blockchain import Transaction, Block
+from blockchain.transaction import Transaction
+from blockchain.block import Block
 
 # Wallet
 from accounts import Wallet
@@ -75,7 +76,7 @@ class Blockchain:
                     return False
 
                 # Check if the block and its transactions are valid
-                if not block.is_valid(self, True):
+                if not block.is_valid(self, in_chain=True):
                     return False
 
         return True
@@ -108,10 +109,10 @@ class Blockchain:
         :rtype: :py:class:`blockchain.Block`
         """
 
-        return Block(tx_data if tx_data else [ ], None,
+        return Block(tx_data if tx_data else [ ],
                     # Not a real public-key and no real signature
-                    '00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
-                    '00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000')
+                    validator='00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+                    signature='00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000')
 
 
     def load_last_blocks(self):
@@ -140,7 +141,7 @@ class Blockchain:
         return True
 
 
-    def add_block(self, block: Block):
+    def add_block(self, block: Block, genesis=False):
         """Adds block to the blockchain.
 
         :param block: The block to add.
@@ -161,8 +162,9 @@ class Blockchain:
         if not block.is_valid(self):
             return False
 
-        # Add block to chain
-        self.last_blocks.insert(0, block)
+        # Add block to chain if it is not the genesis block
+        if not genesis:
+            self.last_blocks.insert(0, block)
 
         # Push block to database
         success = add_block(block.to_dict())
@@ -219,10 +221,10 @@ class Blockchain:
                 return False
 
             # Set block up
-            block_data = fetch_block(index)
+            block_dict = fetch_block(index)
 
             block = Block()
-            block.from_dict(block_data)
+            block.from_dict(block_dict)
 
             # Check if the block was fethced successful
             if not block:

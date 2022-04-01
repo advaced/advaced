@@ -9,6 +9,9 @@ service Blockchain {
 
     rpc getTransaction (TransactionRequest) returns (Transaction);
     rpc getTransactions (TransactionRequest) returns (Transactions);
+
+    rpc addTransaction (Transaction) returns (Success);
+    rpc addTransactions (Transactions) returns (Success);
 }
 
 
@@ -32,9 +35,6 @@ message TransactionRequest {
     optional string sender = 1;
     optional string recipient = 2;
 
-    optional uint64 amount = 3;
-
-    optional string type = 5;
     optional string timestamp = 6;
 
     optional string hash = 7;
@@ -80,4 +80,9 @@ message Block {
 
 message Blocks {
     repeated Block blocks = 1;
+}
+
+// State of success
+message Success {
+    bool success = 1;
 }

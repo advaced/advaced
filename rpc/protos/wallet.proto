@@ -1,3 +1,20 @@
 syntax = "proto3";
 
 package blockchain;
+
+
+service Wallet {
+    rpc getCoins (WalletRequest) returns (WalletResponse);
+    rpc getStake (WalletRequest) returns (WalletResponse);
+
+    rpc getClaims (WalletRequest) returns (WalletResponse);
+    rpc getScore (WalletRequest) returns (WalletResponse);
+}
+
+message WalletRequest {
+    string public_key = 1;
+}
+
+message WalletResponse {
+    double amount = 1;
+}

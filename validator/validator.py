@@ -1,13 +1,14 @@
 # Add to path
 from sys import path
-import os
-path.insert(0, os.path.join(os.getcwd(), '../'))
+from os.path import dirname, abspath, join
+path.insert(0, join(dirname(abspath(__file__)), '..'))
 
-# Blockchain
-from blockchain import Block
+# Blockchains
+from blockchain.block import Block
 
 # Signatures
 from accounts import Wallet
+
 
 class Validator():
     def __init__(self, private_key):
@@ -21,7 +22,7 @@ class Validator():
         public_key = Wallet.get_public_key(private_key)
 
         # Initialize wallet
-        self.wallet = Wallet('Validator', public_key, private_key)
+        self.wallet = Wallet(public_key, private_key)
 
         # The temporary blocks for the next validation
         self.temp_blocks = [ ]
@@ -40,7 +41,11 @@ class Validator():
         block.validator = self.wallet.public_key
 
         # Sign the block
-        block.sign_block(self.wallet.private_key)
+        success = block.sign_block(self.wallet.private_key)
+
+        # Check if signature was successful
+        if not success:
+            return block, False
 
         # Check if the validation was successful
         if not block.validator or not block.signature:
@@ -61,13 +66,13 @@ class Validator():
         # Go through all temporary blocks
         for tmp in self.temp_blocks:
             # Add the validators staking score (stake and its age), his address and the decimal-version of the blocks hash
-            attendees.append((Wallet.score(tmp.validator, blockchain), tmp.validator, int(tmp.hash, 16)))
+            attendees.append([Wallet.score(tmp.validator, blockchain), tmp.validator, int(tmp.hash, 16)])
 
         # Sort the attendees after the smallest to the biggest decimal hash value
         attendees.sort(key=lambda x: x[2])
 
         # Drop the hash value
-        attendees = lambda x: x.pop(2)
+        attendees = list(map(lambda x: x[0:2], attendees))
 
         for i in range(0, len(attendees)):
             # Calculate the validators staking score with his current rank

@@ -1,7 +1,9 @@
+from getpass import getpass
+
 # Add to path
 from sys import path, argv
-import os
-path.insert(0, os.path.join(os.getcwd(), '../'))
+from os.path import dirname, abspath, join
+path.insert(0, join(dirname(abspath(__file__)), '..'))
 
 # Project version
 from __init__ import __version__
@@ -11,6 +13,16 @@ from __init__ import OPTIONS, COMMANDS
 
 # Help
 from .help import print_help
+
+# Validation
+from validator.processor import Processor
+
+# Server
+from rpc.server import RPCServer
+
+# Blockchain
+from blockchain.blockchain import Blockchain
+
 
 def handle_input():
     '''Handle the input and all its arguments
@@ -184,6 +196,42 @@ def handle_input():
         elif cmd_opt == 'list':
             # TODO -> List accounts
             pass
+
+    elif cmd == 'run':
+        if cmd_opt == 'validate':
+            password = getpass(prompt=f'Password for {cmd_opt_value}: ')
+
+            # TODO -> Find user account and get private-key from password and the stored "hash"
+            private_key = '5f83c097f06fa806dfd4023b429b704335df5c5377695bd5d85cd03950ce5b70'
+
+            # Iniitialize the processor and start it
+            processor = Processor(private_key=private_key)
+
+            try:
+                processor.start()
+
+            except:
+                processor.stop()
+
+        elif cmd_opt == 'synchronize':
+            # TODO -> Sync the chain with the others
+            pass
+
+        elif cmd_opt == 'serve':
+            # TODO -> Run the rpc server and frequently sync with the chain
+
+            # Setup rpc server
+            blockchain = Blockchain()
+            rpc_server = RPCServer(blockchain)
+
+            # Serve and frequently sync the chain
+            try:
+                rpc_server.start()
+
+                # TODO -> Sync the chain
+
+            except:
+                rpc_server.stop()
 
     elif cmd == 'export':
         if cmd_opt == 'json':

@@ -9,6 +9,7 @@ from wallet_pb2_grpc import WalletStub
 # Add to path
 from sys import path
 from os.path import dirname, abspath, join
+
 path.insert(0, join(dirname(abspath(__file__)), '..'))
 
 # Project version
@@ -21,7 +22,6 @@ class Client:
     def __init__(self, ip_address, port=None):
         self.ip_address = ip_address
         self.port = port if port else RPC_PORT
-
 
     def getBlock(self, block_request):
         """Fetch block from blockchain.
@@ -45,7 +45,6 @@ class Client:
         except:
             return False
 
-
     def getBlocks(self, block_request):
         """Fetch blocks from blockchain.
 
@@ -67,7 +66,6 @@ class Client:
 
         except:
             return False
-
 
     def getTransaction(self, tx_request):
         """Fetch transaction from blockchain.
@@ -91,7 +89,6 @@ class Client:
         except:
             return False
 
-
     def getTransactions(self, tx_request):
         """Fetch transactions from blockchain.
 
@@ -113,7 +110,6 @@ class Client:
 
         except:
             return False
-
 
     def addTransaction(self, tx):
         """Add transaction to blockchain.
@@ -137,7 +133,6 @@ class Client:
         except:
             return False
 
-
     def addTransactions(self, tx):
         """Add transactions to blockchain.
 
@@ -160,8 +155,6 @@ class Client:
         except:
             return False
 
-
-
     # def run(self):
     #     """Connect to rpc server.
 
@@ -181,7 +174,6 @@ class Client:
     #             except KeyboardInterrupt:
     #                 channel.unsubscribe(self.close)
 
-
     # def close(channel):
     #     channel.close()
 
@@ -190,12 +182,14 @@ if __name__ == '__main__':
     cl = Client('localhost')
     # cl.run()
     from rpc.blockchain_pb2 import Transaction
-    print(cl.addTransaction(Transaction(sender='690ec29bae1791c134acfa0a5f49ebcc43491493e41f751ed319a67db8f75d6dc2acc288b7e7d160ed3362c9490b40ff399047e639a9a0862f6dcd227fbd9f99',
-                                  recipient='187',
-                                  amount=420,
-                                  fee=2,
-                                  type='tx',
-                                  timestamp='2022-04-01 01:10:51.364127+00:00',
-                                  hash='0a874cab556a53fc0b9ce256e4239c8c0ffb1d4f11e9854dd1244f37124c607e',
-                                  signature='aa8a17a754a3007f9ee0d7ff9429f716f6f82327ad6dc1fd66fae546d20914bde43771e25ff75c33598f0e8680cbfd3ef557ce7532d2bc939ea1e5667e4ad860'
-                                 )) )
+
+    print(cl.addTransaction(Transaction(
+        sender='690ec29bae1791c134acfa0a5f49ebcc43491493e41f751ed319a67db8f75d6dc2acc288b7e7d160ed3362c9490b40ff399047e639a9a0862f6dcd227fbd9f99',
+        recipient='187',
+        amount=420,
+        fee=2,
+        type='tx',
+        timestamp='2022-04-01 01:10:51.364127+00:00',
+        hash='0a874cab556a53fc0b9ce256e4239c8c0ffb1d4f11e9854dd1244f37124c607e',
+        signature='aa8a17a754a3007f9ee0d7ff9429f716f6f82327ad6dc1fd66fae546d20914bde43771e25ff75c33598f0e8680cbfd3ef557ce7532d2bc939ea1e5667e4ad860'
+        )))

@@ -9,28 +9,25 @@ from datetime import datetime, timezone, timedelta
 # Add to path
 from sys import path
 from os.path import dirname, abspath, join
+
 path.insert(0, join(dirname(abspath(__file__)), '..'))
 
-# Validator
+# Project modules
 from validator.validator import Validator
-
-# Database handler
 from util.database.database import Database
 
-# Blockchain classes
 from blockchain.transaction import Transaction
 from blockchain.block import Block
 from blockchain.blockchain import Blockchain
 
-# RPC server
 from rpc.server import RPCServer
-
-# Wallet
 from accounts import Wallet
 
 
-class Processor():
+class Processor:
     def __init__(self, private_key, start=False, genesis_validation=False):
+        super().__init__()
+
         self.private_key = private_key
         self.genesis_validation = genesis_validation
 
@@ -41,22 +38,19 @@ class Processor():
         self.input_queue = Queue()
 
         # Transactions to add to chain (list of:py::class:`blockchain.Transaction`)
-        self.tx = [ ]
+        self.tx = []
 
         # Temporary blocks for the next epoch
-        self.next_epoch = [ ]
+        self.next_epoch = []
 
         if start:
             self.start()
 
-
     def run(self):
         # 1. Synchronize with other nodes (via rpc server of these nodes)
 
-
-        # 2. Setup the validator
+        # 2. Set the validator up
         self.validator = Validator(self.private_key)
-
 
         # 3. Check if enough VAC is staked to become a validator
         if Wallet.stake(self.validator.wallet.public_key, self.blockchain) < 4_096:
@@ -64,12 +58,9 @@ class Processor():
 
         # 4. Advertise to the network
 
-
         # 5. Connect to other nodes
 
-
         # 6. Slide into validating process
-
 
         # 7. Listen to new data and validate blocks
         while not self.stop_event.is_set():
@@ -82,7 +73,7 @@ class Processor():
                 self.tx = list(set(self.tx) - set(tx))
 
             else:
-                tx = [ ]
+                tx = []
 
             # Create own block
             block = Block(tx, self.blockchain.last_blocks[0])
@@ -105,15 +96,14 @@ class Processor():
 
                 return False
 
-            # Add blocks fetcched previously
+            # Add blocks fetched previously
             self.validator.temp_blocks = self.next_epoch
-            self.next_epoch = [ ]
+            self.next_epoch = []
 
             # Add block to own temp block
             self.validator.temp_blocks.append(block)
 
             # TODO -> Emit block to other nodes
-
 
             # Collect all temporary blocks and transactions from queue, until time is over (32 seconds)
             while datetime.now().timestamp() <= self.blockchain.last_blocks[0].timestamp.timestamp() + 32:
@@ -127,33 +117,33 @@ class Processor():
 
                     # Check if the item is a block
                     elif item_queue['type'] == 'block':
-                            # Check if the block is for this round
-                            if item_queue['data'].index == block.index:
-                                exists = False
+                        # Check if the block is for this round
+                        if item_queue['data'].index == block.index:
+                            exists = False
 
-                                for tmp in self.validator.temp_blocks:
-                                    if tmp.validator == item_queue['data'].validator:
-                                        exists = True
-                                        break
+                            for tmp in self.validator.temp_blocks:
+                                if tmp.validator == item_queue['data'].validator:
+                                    exists = True
+                                    break
 
-                                if not exists:
-                                    self.validator.temp_blocks.append(item_queue['data'])
+                            if not exists:
+                                self.validator.temp_blocks.append(item_queue['data'])
 
-                            # Check if the block is for the next round
-                            elif item_queue['data'].index == block.index + 1:
-                                self.next_epoch.append(item_queue['data'])
+                        # Check if the block is for the next round
+                        elif item_queue['data'].index == block.index + 1:
+                            self.next_epoch.append(item_queue['data'])
 
-                        # TODO -> Share the block with other nodes
+                    # TODO -> Share the block with other nodes
 
                 else:
                     time_sleep(.01)
-
 
             # Select the winner block of the temporary blocks
             winner_block = self.validator.select_winner(self.blockchain, True)
 
             # Share winner with other nodes, fetch their winner
-            # TODO -> Wait 5 seconds until all possible winners arrived at the input_queue, then select the one with most of the "votes"
+            # TODO -> Wait 5 seconds until all possible winners arrived at the input_queue, then select the one with
+            #  most of the "votes"
 
             # Add block to the blockchain
             success = self.blockchain.add_block(winner_block)
@@ -167,7 +157,7 @@ class Processor():
             print('Added block successfully:', winner_block.index)
 
             # Reset temporary blocks
-            self.validator.temp_blocks = [ ]
+            self.validator.temp_blocks = []
 
             # Every 10 blocks check if whole chain is valid
             if winner_block.index % 10 == 0:
@@ -184,7 +174,6 @@ class Processor():
                     print('Chain is valid')
 
         # 8. Turn all processes off
-
 
     def start(self):
         """Starts the processor-thread.
@@ -211,21 +200,22 @@ class Processor():
 
         else:
             # Test values
-            test_tx = Transaction('00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
-                        '690ec29bae1791c134acfa0a5f49ebcc43491493e41f751ed319a67db8f75d6dc2acc288b7e7d160ed3362c9490b40ff399047e639a9a0862f6dcd227fbd9f99',
-                        4_096, tx_type='stake')
+            test_tx = Transaction(
+                '00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+                '690ec29bae1791c134acfa0a5f49ebcc43491493e41f751ed319a67db8f75d6dc2acc288b7e7d160ed3362c9490b40ff399047e639a9a0862f6dcd227fbd9f99',
+                4_096, tx_type='stake')
             test_tx.signature = '00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'
 
             self.blockchain = Blockchain(genesis_tx=[test_tx])
 
         # Start the rpc server
-        self.rpc_server = RPCServer(self.blockchain, processor_queue=self.input_queue, start=True, db_q=self.database.db_q)
+        self.rpc_server = RPCServer(self.blockchain, processor_queue=self.input_queue, start=True,
+                                    db_q=self.database.db_q)
 
         # Start the database-handler
         self.thread.start()
 
         return True
-
 
     def stop(self):
         """Stops the processor thread.
@@ -249,7 +239,6 @@ class Processor():
         self.rpc_server = None
 
         return True
-
 
     def restart(self):
         """Restarts the thread.

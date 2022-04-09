@@ -36,7 +36,6 @@ def build() -> int:
             # Raise the error
             raise OSError
 
-
     # Set the paths for copying
     source = getcwd()
     destination = f'/lib/advaced/{__version__}'

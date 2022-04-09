@@ -20,7 +20,7 @@ def build_project() -> bool:
 
     success_db = build_db()
 
-    # Check wether the database-build was successful or not
+    # Check whether the database-build was successful or not
     if not success_db:
         # Logging for development
         print('database-build failed')

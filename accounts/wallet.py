@@ -5,22 +5,29 @@ from datetime import datetime, timezone
 
 
 class Wallet:
-    def __init__(self, public_key: VerifyingKey=None, private_key: SigningKey=None):
+    def __init__(self, public_key: str = None, private_key: str = None):
+        """Create a new wallet.
+
+        :param public_key: Public key of the wallet.
+        :type public_key: str (hex digest)
+        :param private_key: Private key of the wallet.
+        :type private_key: str (hex digest)
+        """
+
         # Create wallet keypair (with ecdsa, the SECP256k1 curve and sha3-512 as hash-algorithm)
         verifying_key = SigningKey.generate(curve=SECP256k1, hashfunc=sha3_512)
 
         self.public_key = public_key if public_key else verifying_key.get_verifying_key().to_string().hex()
         self.private_key = private_key if private_key else verifying_key.to_string().hex()
 
-
     @staticmethod
     def sign_data(private_key: str, data: str):
-        """Sign data (stringified) with string of private-key
+        """Sign data with string of private-key
 
         :param private_key: Private-key of the wallet.
         :type private_key: str (hex-digest)
         :param data: Data to sign.
-        :type data: str (in most cases stringified json)
+        :type data: str (json)
 
         :return: False when the key-fetching did not work.
         :rtype: bool
@@ -40,7 +47,6 @@ class Wallet:
 
         return signature
 
-
     @staticmethod
     def valid_signature(public_key: str, signature: str, data: str) -> bool:
         """Verify signature with the public_key.
@@ -50,9 +56,9 @@ class Wallet:
         :param signature: Signature of the data with private-key that is paired with the parsed public-key.
         :type signature: str
         :param data: Data to sign.
-        :type data: str (in most cases stringified json)
+        :type data: str (json)
 
-        :return: Wether the signature is valid or not or the key for it is valid.
+        :return: Whether the signature is valid or not or the key for it is valid.
         :rtype: bool
         """
         try:
@@ -65,10 +71,9 @@ class Wallet:
         except:
             return False
 
-
     @classmethod
-    def valid_versionstamp(cls, public_key: str, signature: str, version: str, timestamp: str, network: str) -> bool:
-        """Verify a versionstamp from a developer-key signature (Warning: This function does not check the validity of
+    def valid_version_stamp(cls, public_key: str, signature: str, version: str, timestamp: str, network: str) -> bool:
+        """Verify a version stamp from a developer-key signature (Warning: This function does not check the validity of
            the public-key as a developer key!).
 
         :param public_key: Public-key of the wallet.
@@ -82,7 +87,7 @@ class Wallet:
         :param network: The network where the version migrates or already migrated ('mainnet' or 'testnet').
         :type network: str
 
-        :return: Wether the signature is valid or not.
+        :return: Whether the signature is valid or not.
         :rtype: bool
         """
 
@@ -90,7 +95,6 @@ class Wallet:
             return False
 
         return True
-
 
     @staticmethod
     def get_public_key(private_key: str):
@@ -104,12 +108,12 @@ class Wallet:
         """
         try:
             # Fetch private-key from hex-string and return public-key
-            return SigningKey.from_string(bytes.fromhex(private_key), curve=SECP256k1, hashfunc=sha3_512).get_verifying_key().to_string().hex()
+            return SigningKey.from_string(bytes.fromhex(private_key), curve=SECP256k1,
+                                          hashfunc=sha3_512).get_verifying_key().to_string().hex()
 
-        # Occurres if private-key is false
+        # Occurred if private-key is false
         except:
             return False
-
 
     @classmethod
     def keypair_valid(cls, public_key: str, private_key: str) -> bool:
@@ -120,7 +124,7 @@ class Wallet:
         :param private_key: Private-key from key-pair.
         :type: str
 
-        :return: The result wether the keys are matching or not.
+        :return: The result whether the keys are matching or not.
         :rtype: bool
         """
 
@@ -132,7 +136,6 @@ class Wallet:
             return False
 
         return True
-
 
     @classmethod
     def coins(cls, public_key: str, blockchain) -> float:
@@ -196,7 +199,6 @@ class Wallet:
         # Return total coins
         return claimed_coins + tx_coins - spend_on_stake
 
-
     @staticmethod
     def claims(public_key: str, blockchain) -> float:
         """Returns the amount of coins the wallet owns.
@@ -218,7 +220,6 @@ class Wallet:
                 claims += transaction.amount - transaction.fee
 
         return claims
-
 
     @staticmethod
     def stake(public_key: str, blockchain) -> float:
@@ -258,7 +259,6 @@ class Wallet:
 
         return staked - unstaked - burned
 
-
     @classmethod
     def score(cls, public_key: str, blockchain) -> float:
         """Returns the staking worth of the wallet.
@@ -281,10 +281,10 @@ class Wallet:
             return 0
 
         # Bring the transactions into a better format
-        stakes = [ ]
+        stakes = []
 
         for tx in stake_tx:
-            stakes.append(( tx.amount, tx.timestamp.timestamp() ))
+            stakes.append((tx.amount, tx.timestamp.timestamp()))
 
         stakes.sort(key=lambda x: x[1])
 
@@ -296,7 +296,8 @@ class Wallet:
                 amount_left = tx.amount
 
                 while amount_left > 0:
-                    # Check if something really went wrong (if this occurres the stake of the account is negative and not allowed)
+                    # Check if something really went wrong (if this occurres the stake of the account is negative and
+                    # not allowed)
                     if len(stakes) == 0:
                         return 0
 
@@ -317,7 +318,8 @@ class Wallet:
                 amount_left = tx.amount
 
                 while amount_left > 0:
-                    # Check if something really went wrong (if this occurres the stake of the account is negative and not allowed)
+                    # Check if something really went wrong (if this occurres the stake of the account is negative and
+                    # not allowed)
                     if len(stakes) == 0:
                         return 0
 
@@ -339,9 +341,9 @@ class Wallet:
 
         for stake in stakes:
             age = datetime.now(timezone.utc).timestamp() - stake[1] \
-                  if datetime.now(timezone.utc).timestamp() - stake[1] < 2_764_800 else 2_764_800 # 32 days in seconds
+                if datetime.now(timezone.utc).timestamp() - stake[1] < 2_764_800 else 2_764_800  # 32 days in seconds
 
-            coin_age += stake[0] * 1.000_000_104_051 ** age # (Increases 33.333% at maximum)
+            coin_age += stake[0] * 1.000_000_104_051 ** age  # (Increases 33.333% at maximum)
 
         # Check if the coin age is above the maximum
         if coin_age > 65_536:

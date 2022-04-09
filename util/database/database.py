@@ -7,11 +7,6 @@ from threading import Thread, Event
 
 from time import sleep as time_sleep
 
-# Add to path
-from sys import path
-import os
-path.insert(0, os.path.join(os.getcwd()))
-
 # Path of the database
 from __init__ import DATABASE_FILE
 
@@ -33,9 +28,8 @@ class Database():
         if not manual:
             self.db_thread.start()
 
-
     @classmethod
-    def push_to_db(cls,  sql_command: str, sql_data: dict):
+    def push_to_db(cls, sql_command: str, sql_data: dict):
         """Executes the input to the database.
 
         :param sql_command: Command to execute.
@@ -60,7 +54,6 @@ class Database():
 
         return True
 
-
     @classmethod
     def fetchone_from_db(cls, sql_command: str, sql_data: dict):
         """Fetches one response from the database.
@@ -80,7 +73,6 @@ class Database():
         response = cls.execute_sql(connection, sql_command, sql_data, 'one')
 
         return response
-
 
     @classmethod
     def fetchall_from_db(cls, sql_command: str, sql_data: dict):
@@ -102,9 +94,8 @@ class Database():
 
         return response
 
-
     @staticmethod
-    def execute_sql(connection: Connection, sql_command: str, executing_args: dict=None, fetch=None):
+    def execute_sql(connection: Connection, sql_command: str, executing_args: dict = None, fetch=None):
         """Execute the given sql.
 
         :param connection: Connection to the database.
@@ -138,7 +129,6 @@ class Database():
 
         return response
 
-
     def database_handler(self):
         """Handle incoming database-tasks from the queue.
 
@@ -159,7 +149,7 @@ class Database():
 
             # If the sql_data is too small, append empty data to fill the space
             while len(sql_data) < 4:
-                sql_data += (None, )
+                sql_data += (None,)
 
             # Execute the sql and wait for the response
             response = self.execute_sql(connection, sql_data[0], sql_data[1], sql_data[2])
@@ -167,7 +157,6 @@ class Database():
             # Check if a queue was provided to push the response to
             if sql_data[3]:
                 sql_data[3].put(response)
-
 
     def fetchone(self, sql_command: str, sql_data: dict):
         """Fetches one response from the database.
@@ -181,7 +170,7 @@ class Database():
         """
 
         # Set the queue up
-        query_queue =  Queue()
+        query_queue = Queue()
 
         # Put the data into the queue of the database
         self.db_q.put((sql_command, sql_data, 'one', query_queue))
@@ -192,7 +181,6 @@ class Database():
 
         # Return the data
         return query_queue.get()
-
 
     def fetchall(self, sql_command: str, sql_data: dict):
         """Fetches the full response from the database.
@@ -206,7 +194,7 @@ class Database():
         """
 
         # Set the queue up
-        query_queue =  Queue()
+        query_queue = Queue()
 
         # Put the data into the queue of the database
         self.db_q.put((sql_command, sql_data, 'all', query_queue))
@@ -217,7 +205,6 @@ class Database():
 
         # Return the data
         return query_queue.get()
-
 
     def start(self):
         """Starts the database-thread manually.
@@ -240,7 +227,6 @@ class Database():
 
         return True
 
-
     def stop(self):
         """Stops the database-thread manually.
 
@@ -259,7 +245,6 @@ class Database():
         self.stop_event.set()
 
         return True
-
 
     def restart(self):
         """Restarts the database-thread manually.

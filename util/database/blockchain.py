@@ -1,7 +1,8 @@
 # Add to path
 from sys import path
-from os import getcwd
-path.insert(0, getcwd())
+from os.path import dirname, abspath, join
+
+path.insert(0, join(dirname(abspath(__file__)), '..'))
 
 # Transaction-class
 from blockchain.transaction import Transaction
@@ -55,7 +56,7 @@ def recreate_tx(tx_data):
     }
 
 
-def add_block(block_dict: dict, overwrite: bool=False):
+def add_block(block_dict: dict, overwrite: bool = False):
     """Add block to the database.
 
     :param block_dict: Dictionary of block-information.
@@ -106,7 +107,7 @@ def remove_block(index: int):
     """
 
     # Delete block from database
-    success = Database.push_to_db('DELETE FROM blockchain WHERE block_index = :id', { 'id': index })
+    success = Database.push_to_db('DELETE FROM blockchain WHERE block_index = :id', {'id': index})
 
     # Check if execution was not succesful
     if not success:
@@ -128,7 +129,7 @@ def fetch_block(index: int):
     """
 
     # Fetch the block
-    block_data = Database.fetchone_from_db('SELECT * FROM blockchain WHERE block_index = :id', { 'id': index })
+    block_data = Database.fetchone_from_db('SELECT * FROM blockchain WHERE block_index = :id', {'id': index})
 
     # Check if the response of the database is correct
     if not block_data:
@@ -136,8 +137,8 @@ def fetch_block(index: int):
 
     # Fetch the blocks transactions
     tx = Database.fetchall_from_db('SELECT sender, recipient, amount, fee, type, timestamp, hash, signature FROM \
-                                    transactions WHERE block_index = :index', { 'index': index })
-    tx_dicts = [ ]
+                                    transactions WHERE block_index = :index', {'index': index})
+    tx_dicts = []
 
     # Check if there are any transactions in the block
     if tx:
@@ -174,7 +175,8 @@ def fetch_block_from_timestamp(timestamp):
     """
 
     # Fetch the block
-    block_data = Database.fetchone_from_db('SELECT * FROM blockchain WHERE timestamp = :timestamp', { 'timestamp': timestamp })
+    block_data = Database.fetchone_from_db('SELECT * FROM blockchain WHERE timestamp = :timestamp',
+                                           {'timestamp': timestamp})
 
     # Check if the response of the database is correct
     if not block_data:
@@ -182,8 +184,8 @@ def fetch_block_from_timestamp(timestamp):
 
     # Fetch the blocks transactions
     tx = Database.fetchall_from_db('SELECT sender, recipient, amount, fee, type, timestamp, hash, signature FROM \
-                                    transactions WHERE block_index = :index', { 'index': block_data[0] })
-    tx_dicts = [ ]
+                                    transactions WHERE block_index = :index', {'index': block_data[0]})
+    tx_dicts = []
 
     # Check if there are any transactions in the block
     if tx:
@@ -223,7 +225,7 @@ def fetch_block_from_signature(signature: str, hash: str):
 
     # Fetch the block
     block_data = Database.fetchone_from_db('SELECT * FROM blockchain WHERE hash = :hash AND signature = :signature',
-                                           { 'hash': hash, 'signature': signature })
+                                           {'hash': hash, 'signature': signature})
 
     # Check if the response of the database is correct
     if not block_data:
@@ -231,8 +233,8 @@ def fetch_block_from_signature(signature: str, hash: str):
 
     # Fetch the blocks transactions
     tx = Database.fetchall_from_db('SELECT sender, recipient, amount, fee, type, timestamp, hash, signature FROM \
-                                    transactions WHERE block_index = :index', { 'index': block_data[0] })
-    tx_dicts = [ ]
+                                    transactions WHERE block_index = :index', {'index': block_data[0]})
+    tx_dicts = []
 
     # Check if there are any transactions in the block
     if tx:
@@ -267,11 +269,11 @@ def fetch_transaction_block_index(tx: Transaction):
     """
     index = Database.fetchone_from_db('SELECT block_index FROM transactions WHERE timestamp = :timestamp AND \
                                        hash = :hash AND signature = :signature',
-                                       {
-                                           'timestamp': str(tx.timestamp),
-                                           'hash': tx.hash,
-                                           'signature': tx.signature
-                                       })
+                                      {
+                                          'timestamp': str(tx.timestamp),
+                                          'hash': tx.hash,
+                                          'signature': tx.signature
+                                      })
 
     # Check if fetch was successful
     if not index:
@@ -280,7 +282,7 @@ def fetch_transaction_block_index(tx: Transaction):
     return index
 
 
-def fetch_transactions(public_key: str, tx_type: str=None, is_sender: bool=None):
+def fetch_transactions(public_key: str, tx_type: str = None, is_sender: bool = None):
     """Fetch all transactions the account made in the past.
 
     :param public_key: Verifying key of the account.
@@ -300,7 +302,7 @@ def fetch_transactions(public_key: str, tx_type: str=None, is_sender: bool=None)
         transactions_data = Database.fetchall_from_db('SELECT sender, recipient, amount, fee, type, timestamp, hash, \
                                                        signature FROM transactions WHERE type = :type AND \
                                                        (sender = :public_key OR recipient = :public_key)',
-                                                      { 'type': tx_type, 'public_key': public_key })
+                                                      {'type': tx_type, 'public_key': public_key})
 
     # Check if the type of the transaction is provided and the account should be the sender
     elif tx_type and is_sender == True:
@@ -308,7 +310,7 @@ def fetch_transactions(public_key: str, tx_type: str=None, is_sender: bool=None)
         transactions_data = Database.fetchall_from_db('SELECT sender, recipient, amount, fee, type, timestamp, hash, \
                                                        signature FROM transactions WHERE type = :type AND \
                                                        sender = :public_key',
-                                                      { 'type': tx_type, 'public_key': public_key })
+                                                      {'type': tx_type, 'public_key': public_key})
 
     # Check if the type of the transaction is provided and the account should be the sender
     elif tx_type and is_sender == False:
@@ -316,34 +318,34 @@ def fetch_transactions(public_key: str, tx_type: str=None, is_sender: bool=None)
         transactions_data = Database.fetchall_from_db('SELECT sender, recipient, amount, fee, type, timestamp, hash, \
                                                        signature FROM transactions WHERE type = :type AND \
                                                        recipient = :public_key',
-                                                      { 'type': tx_type, 'public_key': public_key })
+                                                      {'type': tx_type, 'public_key': public_key})
 
     # Check if only the transactions should be fetched were the account is the sender
     elif is_sender == True:
         # Fetch the transactions
         transactions_data = Database.fetchall_from_db('SELECT sender, recipient, amount, fee, type, timestamp, hash, \
                                                        signature FROM transactions WHERE sender = :public_key',
-                                                      { 'public_key': public_key })
+                                                      {'public_key': public_key})
 
     # Check if only the transactions should be fetched were the account is the recipient
     elif is_sender == True:
         # Fetch the transactions
         transactions_data = Database.fetchall_from_db('SELECT sender, recipient, amount, fee, type, timestamp, hash, \
                                                        signature FROM transactions WHERE recipient = :public_key',
-                                                      { 'public_key': public_key })
+                                                      {'public_key': public_key})
 
     # Fetch all transactions where this account is involved
     else:
         transactions_data = Database.fetchall_from_db('SELECT sender, recipient, amount, fee, type, timestamp, hash, \
                                                        signature FROM transactions WHERE sender = :public_key OR \
                                                        recipient = :public_key',
-                                                      { 'type': tx_type, 'public_key': public_key })
+                                                      {'type': tx_type, 'public_key': public_key})
 
     # Check if no transactions were found
     if not transactions_data:
-        return [ ]
+        return []
 
-    transactions = [ ]
+    transactions = []
 
     # Check if multiple transactions were fetched
     if type(transactions_data) == list:
@@ -368,7 +370,7 @@ def fetch_transactions(public_key: str, tx_type: str=None, is_sender: bool=None)
     return transactions
 
 
-def fetch_versionstamps(network='mainnet', db=None):
+def fetch_version_stamps(network='mainnet', db=None):
     """Fetch the timestamps for the versions.
 
     :return: Dictionary that consists of versions as keys and timestamps as values
@@ -377,24 +379,25 @@ def fetch_versionstamps(network='mainnet', db=None):
 
     # Check if a database-class was parsed
     if db:
-        response = db.fetchall('SELECT version, timestamp FROM versionstamps WHERE network = :net', { 'net': network })
+        response = db.fetchall('SELECT version, timestamp FROM version_stamps WHERE network = :net', {'net': network})
 
     else:
-        response = Database.fetchall_from_db('SELECT version, timestamp FROM versionstamps WHERE network = :net', { 'net': network })
+        response = Database.fetchall_from_db('SELECT version, timestamp FROM version_stamps WHERE network = :net',
+                                             {'net': network})
 
     # Check if response exists
     if not response:
-        return { }
+        return {}
 
-    versionstamps = { }
+    version_stamps = {}
 
     # Check if multiple stamps were fetched
     if type(response) == list:
         for stamp in response:
-            versionstamps[stamp[0]] = stamp[1]
+            version_stamps[stamp[0]] = stamp[1]
 
     else:
         # Only one value was returned
-        versionstamps[response[0]] = response[1]
+        version_stamps[response[0]] = response[1]
 
-    return versionstamps
+    return version_stamps

@@ -7,7 +7,7 @@ from sqlite3 import connect
 
 # Database path
 # from ...__init__ import DATABASE_FILE
-DATABASE_FILE = join('/usr', 'lib', 'advaced', 'database', 'db.db')
+DATABASE_FILE = join('/lib', 'advaced', 'database', 'db.db')
 
 
 def create_tables(cursor):
@@ -16,7 +16,7 @@ def create_tables(cursor):
     :param cursor: Cursor of sqlite-connection
     :type cursor: :py:class:`sqlite3.Cursor`
 
-    :return: Status code wether cursor-execution was successful
+    :return: Status code whether cursor-execution was successful
     :rtype: bool
     """
 
@@ -26,7 +26,6 @@ def create_tables(cursor):
 
     # Execute the script
     cursor.executescript(sql_script)
-
 
 
 def create_database(overwrite=False):

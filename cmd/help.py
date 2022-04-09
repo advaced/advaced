@@ -21,9 +21,9 @@ def print_help(options: list, option_values: list):
 
     for _, opt in OPTIONS.items():
         # Check if a value is required
-        if opt['value'] == True:
+        if opt['value']:
             if 'value-required' in opt:
-                if opt['value-required'] == True:
+                if opt['value-required']:
                     value = ' value'
 
                 else:
@@ -55,6 +55,12 @@ def print_help(options: list, option_values: list):
 
         elif 'max' in opt:
             option = f'\t{opt["max"]}{value}'
+
+        else:
+            # Development log
+            print('Error: No option value')
+            
+            return False
 
         # Add some space
         if 33 - len(option) > 0:

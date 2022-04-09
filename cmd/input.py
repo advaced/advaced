@@ -3,6 +3,9 @@ from getpass import getpass
 # Add to path
 from sys import path, argv
 from os.path import dirname, abspath, join
+
+from .error import InvalidCommand, InvalidArgument, TooManyArguments, MissingArguments
+
 path.insert(0, join(dirname(abspath(__file__)), '..'))
 
 # Project version
@@ -25,22 +28,20 @@ from blockchain.blockchain import Blockchain
 
 
 def handle_input():
-    '''Handle the input and all its arguments
+    """Handle the input and all its arguments
 
-    :param arguments: The given arguments when the command was executed
-    :type arguments: string
-
+    :raises: :py:class:`cmd.error.InvalidCommand`: If the command is invalid.
     :raises: :py:class:`cmd.error.InvalidArgument`: If an argument doesn't exist
     :raises: :py:class:`cmd.error.TooManyArguments`: If too many arguments are used
-    :raises: :py:class:`cmd.error.TooFewArguments`:
-    '''
+    :raises: :py:class:`cmd.error.MissingArgument`: If an argument is missing
+    """
 
-    # Check if their are any arguments provided
+    # Check if there are any arguments provided
     if len(argv) < 2:
-        return False
+        raise MissingArguments('No arguments provided.')
 
-    opt = [ ]
-    opt_values = [ ]
+    opt = []
+    opt_values = []
 
     cmd = None
     cmd_opt = None
@@ -92,8 +93,7 @@ def handle_input():
                     elif option['value'] == True and not option['value-required']:
 
                         # Check if it is not a value
-                        if (not is_option(argv[pos + 1]) and
-                            not is_command(argv[pos + 1]) and
+                        if (not is_option(argv[pos + 1]) and not is_command(argv[pos + 1]) and
                             not is_command_option(argv[pos + 1])):
                             if len(argv) == pos + 1:
                                 return False
@@ -142,13 +142,12 @@ def handle_input():
 
                     # Check if a value could be provided
                     if (cmd_option['value'] == True and
-                        (cmd_option['value-required'] if 'value-required' in cmd_option else false) == False):
+                        (cmd_option['value-required'] if 'value-required' in cmd_option else False) == False):
                         if len(argv) <= pos + 1:
                             return False
 
                         # Check if it is not a value
-                        if (not is_option(argv[pos + 1]) and
-                            not is_command(argv[pos + 1]) and
+                        if (not is_option(argv[pos + 1]) and not is_command(argv[pos + 1]) and
                             not is_command_option(argv[pos + 1])):
                             if len(argv) <= pos + 1:
                                 break
@@ -173,13 +172,14 @@ def handle_input():
             continue
 
         else:
-            # Dev log
-            print('Provided value was not found! Value:', argument, '| Position:', pos - 1)
+            # Check if this argument is not a command
+            if cmd:
+                raise InvalidArgument(argument)
 
-            # Value was not found in options, commands, command options and their values
-            return False
+            else:
+                raise InvalidCommand(argument)
 
-    # Check wich action the protocol should handle
+    # Check which action the protocol should handle
     if cmd == 'account':
         if cmd_opt == 'create':
             # TODO -> Create account (with input fields for the password etc.) and save it to the db
@@ -204,7 +204,7 @@ def handle_input():
             # TODO -> Find user account and get private-key from password and the stored "hash"
             private_key = '5f83c097f06fa806dfd4023b429b704335df5c5377695bd5d85cd03950ce5b70'
 
-            # Iniitialize the processor and start it
+            # Initialize the processor and start it
             processor = Processor(private_key=private_key)
 
             try:

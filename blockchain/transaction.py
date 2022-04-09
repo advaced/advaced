@@ -1,12 +1,11 @@
-# SHA3-256 hash-algorithm
 from hashlib import sha3_256
-
 from datetime import datetime, timezone
 import json
 
 # Add to path
 from sys import path
 import os
+
 path.insert(0, os.path.join(os.getcwd(), '..'))
 
 # Wallet
@@ -35,7 +34,7 @@ class Transaction:
         self.recipient = recipient
         self.amount = amount
 
-        # Set the bfee
+        # Set the fee
         if tx_type == 'tx':
             self.fee = fee + tip
 
@@ -53,7 +52,6 @@ class Transaction:
         # Add a timestamp
         self.timestamp = datetime.now(timezone.utc)
 
-
     @property
     def hash(self) -> str:
         """Calculates the hash of the transaction with the SHA3-256 hash-algorithm.
@@ -62,8 +60,7 @@ class Transaction:
         :rtype: str (hex-digest)
         """
         return sha3_256((str(self.sender) + str(self.recipient) + str(self.amount) + str(self.fee) +
-               str(self.type) + str(self.timestamp)).encode()).hexdigest()
-
+                         str(self.type) + str(self.timestamp)).encode()).hexdigest()
 
     def sign_tx(self, private_key):
         """Signs the transaction with the private-key of the keypair (in most cases the private-key of the sender)
@@ -100,13 +97,12 @@ class Transaction:
 
         return True
 
-
     def is_valid(self, blockchain, in_chain=False) -> bool:
         """Check if transactions-signature is valid.
 
         :param blockchain: The blockchain where the transaction should go in.
         :type blockchain: :py:class:`blockchain.Blockchain`
-        :param in_chain: Wether the trabsaction is already included or not.
+        :param in_chain: If the transaction is already in the chain.
         :type in_chain: bool
 
         :return: Validity of transaction and its signature.
@@ -128,8 +124,8 @@ class Transaction:
             verifying_key = self.recipient
 
         # Check if the transaction type is wrong
-        if not self.type == 'tx' and not self.type == 'stake' and not self.type == 'unstake' \
-           and not self.type == 'claim':
+        if (not self.type == 'tx' and not self.type == 'stake' and not self.type == 'unstake'
+            and not self.type == 'claim'):
             return False
 
         # Check if the signature is valid
@@ -151,7 +147,6 @@ class Transaction:
 
         return True
 
-
     def to_dict(self) -> dict:
         """Create dictionary format of the transaction
 
@@ -172,14 +167,13 @@ class Transaction:
             'signature': self.signature
         }
 
-
     def from_dict(self, dict_data) -> bool:
         """Create transaction from dict-data
 
         :param dict_data: Dictionary that includes the transaction-values
-        :type dict_data: str
+        :type dict_data: dict
 
-        :return: A status wether the data-load was successful or not
+        :return: Status whether the transaction was created or not.
         :rtype: bool
         """
         try:
@@ -194,24 +188,22 @@ class Transaction:
             if dict_data['signature']:
                 self.signature = dict_data['signature']
 
-            self.timestamp = datetime.strptime(dict_data['timestamp'], '%Y-%m-%d %H:%M:%S.%f%z').replace(tzinfo=timezone.utc)
+            self.timestamp = datetime.strptime(dict_data['timestamp'], '%Y-%m-%d %H:%M:%S.%f%z').replace(
+                tzinfo=timezone.utc)
 
         # Return the status
         except:
             return False
 
-
         return True
-
 
     def to_json(self) -> str:
         """For data transportation/storing purposes, a json-format is created
 
         :return: Transaction in json-format
-        :rtype: str (stringified json)
+        :rtype: str (json)
         """
         return json.dumps(self.to_dict())
-
 
     def from_json(self, json_data) -> bool:
         """Create transaction from json-data
@@ -219,7 +211,7 @@ class Transaction:
         :param json_data: String in json-format that includes the transaction-values
         :type json_data: str
 
-        :return: A status wether the data-load was successful or not
+        :return: A status whether the data-load was successful or not
         :rtype: bool
         """
 

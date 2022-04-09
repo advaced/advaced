@@ -7,18 +7,13 @@ import json
 # Add to path
 from sys import path
 from os.path import dirname, abspath, join
+
 path.insert(0, join(dirname(abspath(__file__)), '..'))
 
-# Project version
+# Project modules
 from __init__ import __version__
-
-# Blockchain-classes
 from blockchain.transaction import Transaction
-
-# Wallet
 from accounts import Wallet
-
-# Database handler
 from util.database.blockchain import fetch_block
 
 
@@ -51,14 +46,13 @@ class Block:
         # Create the timestamp of the block
         self.timestamp = datetime.now(timezone.utc)
 
-
         # Check if the base-fee should be calculated
         if base_fee:
             tx_len = 0
             blocks_used = 0
 
             # Fetch last 32 block dicts and add their tx-count
-            for x in range(self.index -32, self.index):
+            for x in range(self.index - 32, self.index):
                 if x < 1:
                     continue
 
@@ -84,7 +78,6 @@ class Block:
         self.validator = validator
         self.signature = signature
 
-
     @property
     def tx_dict(self) -> list:
         """Creates dictionary-list version of the included transactions.
@@ -100,7 +93,6 @@ class Block:
 
         return tx_list
 
-
     @property
     def hash(self) -> str:
         """Calculates the hash of the block with the SHA3_256 hash-algorithm.
@@ -114,15 +106,14 @@ class Block:
             # Development logs
             print("WARNING!: Block incomplete, hash is not completely right!")
 
-        return sha3_256((str(self.index) + self.version + str(self.timestamp) + str(self.base_fee) + str(self.tx_dict) \
-                       + (self.validator if self.validator else "")).encode()).hexdigest()
+        return sha3_256((str(self.index) + self.version + str(self.timestamp) + str(self.base_fee) + str(self.tx_dict)
+                         + (self.validator if self.validator else "")).encode()).hexdigest()
 
-
-    def sign_block(self, private_key):
+    def sign_block(self, private_key: str):
         """Signs the block with the private-key of the validators keypair (The validator must be set).
 
-        :param key: The private-key of the validator
-        :type key: str
+        :param private_key: The private-key of the validator
+        :type private_key: str
 
         :return: Status whether the signature-process worked or not.
         :rtype: bool
@@ -150,13 +141,12 @@ class Block:
 
         return True
 
-
     def is_valid(self, blockchain, in_chain=False) -> bool:
         """Check if the block is valid.
 
         :param blockchain: The blockchain where the block is in or should go in.
         :type blockchain: :py:class:`blockchain.Blockchain`
-        :param in_chain: Wether the block is already included or not.
+        :param in_chain: Whether the block is already included or not.
         :type in_chain: bool
 
         :return: Validity of block.
@@ -200,9 +190,9 @@ class Block:
             return False
 
         # Check if version is allowed to use on this block
-        if datetime.strptime(blockchain.versionstamps[self.version], '%Y-%m-%d %H:%M:%S.%f').replace(tzinfo=timezone.utc) > self.timestamp:
+        if datetime.strptime(blockchain.versionstamps[self.version], '%Y-%m-%d %H:%M:%S.%f').replace(
+            tzinfo=timezone.utc) > self.timestamp:
             return False
-
 
         # Check timestamp
         if self.timestamp > datetime.now(timezone.utc) and in_chain:
@@ -213,7 +203,7 @@ class Block:
         blocks_used = 0
 
         # Fetch last 32 block dicts and add their tx-count
-        for x in range(self.index -32, self.index):
+        for x in range(self.index - 32, self.index):
             if x < 1:
                 continue
 
@@ -240,7 +230,6 @@ class Block:
 
         return True
 
-
     def to_dict(self) -> dict:
         """Creates dictionary from block-information.
 
@@ -262,15 +251,13 @@ class Block:
             'signature': self.signature
         }
 
-
     def to_json(self):
         """For data transportation/storing purposes, a json-format is created
 
         :return: Block in json-format
-        :rtype: str (stringified json)
+        :rtype: str (json)
         """
         return json.dumps(self.to_dict())
-
 
     def from_dict(self, block_dict):
         """Set block-data from dictionary.
@@ -278,7 +265,7 @@ class Block:
         :param block_dict: Information of block.
         :type block_dict: dict
 
-        :return: A status wether the data-load was successful or not
+        :return: A status whether the data-load was successful or not
         :rtype: bool
         """
         try:
@@ -294,7 +281,8 @@ class Block:
                 return False
 
             # Create datetime-object from string
-            self.timestamp = datetime.strptime(block_dict['timestamp'], '%Y-%m-%d %H:%M:%S.%f%z').replace(tzinfo=timezone.utc)
+            self.timestamp = datetime.strptime(block_dict['timestamp'], '%Y-%m-%d %H:%M:%S.%f%z').replace(
+                tzinfo=timezone.utc)
 
             self.previous_hash = block_dict['previous_hash']
 
@@ -316,14 +304,13 @@ class Block:
 
         return True
 
-
     def from_tx_dict(self, tx_dict):
         """Create transactions from dict-data
 
         :param tx_dict: List that includes transaction-values as dict-object.
         :type tx_dict: list
 
-        :return: A status wether the data-load was successful or not
+        :return: A status whether the data-load was successful or not
         :rtype: bool
         """
 
@@ -346,14 +333,13 @@ class Block:
 
         return True
 
-
     def from_json(self, json_data):
         """Create block from json-data.
 
         :param json_data: String in json-format that includes the block-values
         :type json_data: str
 
-        :return: A status wether the data-load was successful or not
+        :return: A status whether the data-load was successful or not
         :rtype: bool
         """
         try:

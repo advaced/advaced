@@ -13,6 +13,7 @@ class Server(Thread):
         :param port: Port of the server connection.
         :type port: int
         """
+        super().__init__()
 
         # Set host and port
         self.host = host if host else get('https://api.ipify.org').content.decode('utf8')

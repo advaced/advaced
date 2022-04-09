@@ -26,6 +26,7 @@ def build():
     # Create the directory
     try:
         mkdir('/lib/advaced/database')
+        
     except:
         return False
 

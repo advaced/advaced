@@ -3,6 +3,7 @@ from hashlib import sha3_256
 # Add path
 import sys
 import os
+
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 from util.database.accounts import fetch_account, push_account, delete_account

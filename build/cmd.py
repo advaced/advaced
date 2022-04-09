@@ -13,11 +13,10 @@ def build() -> int:
 
     :raises: OSError
     :raises: BaseException
-
     """
 
     # Check if file already exists
-    if path.isfile('/usr/bin/advaced'):
+    if path.isfile('/bin/advaced'):
         # Logging for development
         print('found another file')
 
@@ -26,38 +25,29 @@ def build() -> int:
             # Logging for development
             print('removing old file')
 
-            remove('/usr/bin/advaced')
+            remove('/bin/advaced')
 
         except OSError as error:
-            # Raise the error
-            raise
-
             # Logging for development
             print('finished with error')
 
-            return False
+            # Raise the error
+            raise OSError
 
     # Logging for development
     print('creating bash file...')
 
     try:
         # Create bash file to run
-        with open('/usr/bin/advaced', 'a') as shell_file:
-            shell_file.writelines(['#!/usr/bin/sh\n', f'python3 "/usr/lib/advaced/{__version__}/" $@'])
+        with open('/bin/advaced', 'a') as shell_file:
+            shell_file.writelines(['#!/bin/sh\n', f'python3 "/lib/advaced/{__version__}/" $@'])
 
-    except OSError as error:
+    except OSError or BaseException as error:
         # Logging for development
-        print(f'error: {error}')
-        raise
+        print('finished with error')
 
-        return False
-
-    except BaseException as error:
-        # Logging for development
-        print(f'error: {error}')
-        raise
-
-        return False
+        # Raise the error
+        raise error
 
     # Logging for development
     print('build finished')

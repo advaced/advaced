@@ -1,6 +1,6 @@
 # Modules for directory-copying
 from os import path, getcwd, rmdir
-from shutil import rmtree, copytree, Error as shutil_error
+from shutil import rmtree, copytree, Error
 
 # Project version
 from __init__ import __version__
@@ -18,7 +18,7 @@ def build() -> int:
     """
 
     # Check if build already exists
-    if path.isdir(f'/usr/lib/advaced/{__version__}'):
+    if path.isdir(f'/lib/advaced/{__version__}'):
         # Logging for development
         print('found another build')
 
@@ -27,21 +27,19 @@ def build() -> int:
             # Logging for development
             print('removing old build')
 
-            rmtree(f'/usr/lib/advaced/{__version__}')
+            rmtree(f'/lib/advaced/{__version__}')
 
         except OSError as error:
-            # Raise the error
-            raise
-
             # Logging for development
             print('finished with error')
 
-            return False
+            # Raise the error
+            raise OSError
 
 
     # Set the paths for copying
     source = getcwd()
-    destination = f'/usr/lib/advaced/{__version__}'
+    destination = f'/lib/advaced/{__version__}'
 
     # Logging for development
     print(f'copying to {destination}...')
@@ -50,14 +48,12 @@ def build() -> int:
     try:
         copytree(source, destination)
 
-    except shutil_error:
-        # Raise the error
-        raise
-
+    except Error as error:
         # Logging for development
         print('finished with error')
 
-        return False
+        # Raise the error
+        raise error
 
     # Logging for development
     print('finished without error')

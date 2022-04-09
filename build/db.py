@@ -25,9 +25,9 @@ def build():
 
     # Create the directory
     try:
-        mkdir('/usr/lib/advaced/database')
+        mkdir('/lib/advaced/database')
     except:
-        pass
+        return False
 
     # Create the database
     create_database(True)

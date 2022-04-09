@@ -8,6 +8,8 @@ requests = "*"
 ecdsa = "*"
 grpcio = "*"
 grpcio-tools = "*"
+bcrypt = "*"
+pycrypto = "*"
 
 [dev-packages]
 

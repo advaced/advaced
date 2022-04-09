@@ -10,10 +10,10 @@ OS = system()
 
 # Set the database path from used operating system
 if OS == 'Linux':
-    DATABASE_FILE = join('/usr', 'lib', 'advaced', 'database', 'db.db')
+    DATABASE_FILE = join('/lib', 'advaced', 'database', 'db.db')
 
 elif OS == 'Windows':
-    DATABASE_FILE = join(getcwd(), 'db.db') # Path firstly used only for developement
+    DATABASE_FILE = join(getcwd(), 'db.db')  # Path firstly used only for developement
 
 elif OS == 'Darwin':
     DATABASE_FILE = join('Library', 'advaced', 'database', 'db.db')
@@ -63,7 +63,7 @@ OPTIONS = {
         'value-required': True,
 
         # full: everything | light: last 1_000 blocks
-        'values': [ 'full', 'light' ],
+        'values': ['full', 'light'],
 
         'description': 'Set synchronization mode ("full" or "light") (default: full)'
     }

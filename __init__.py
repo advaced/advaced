@@ -13,7 +13,7 @@ if OS == 'Linux':
     DATABASE_FILE = join('/lib', 'advaced', 'database', 'db.db')
 
 elif OS == 'Windows':
-    DATABASE_FILE = join(getcwd(), 'db.db')  # Path firstly used only for developement
+    DATABASE_FILE = join(getcwd(), 'db.db')  # Path firstly used only for development
 
 elif OS == 'Darwin':
     DATABASE_FILE = join('Library', 'advaced', 'database', 'db.db')
@@ -33,7 +33,7 @@ USAGE = 'advaced [OPTIONS] COMMAND [COMMAND-OPTIONS]'
 
 # Set options-dict up
 OPTIONS = {
-    # Wich network to use
+    # Which network to use
     'mainnet': {
         'min': '-mn',
         'standard': '--mainnet',
@@ -55,9 +55,9 @@ OPTIONS = {
     },
 
     # How much data should be synchronized (full-chain, last-10_000 or last-100 blocks)
-    'syncmode': {
+    'sync-mode': {
         'standard': '--sync',
-        'max': '--syncmode',
+        'max': '--sync-mode',
 
         'value': True,
         'value-required': True,
@@ -82,9 +82,7 @@ COMMANDS = {
                 'min': 'new',
                 'standard': 'create',
 
-                'value': True,
-                'value-name': 'name',
-                'value-required': False,
+                'value': False,
 
                 'description': 'Creates a new account'
             },

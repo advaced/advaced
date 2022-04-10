@@ -1,30 +1,24 @@
 from getpass import getpass
+from os import getcwd
+import json
+
+# Error handling
+from .error import InvalidCommand, InvalidArgument, TooManyArguments, MissingArguments
 
 # Add to path
 from sys import path, argv
 from os.path import dirname, abspath, join
 
-from .error import InvalidCommand, InvalidArgument, TooManyArguments, MissingArguments
-
 path.insert(0, join(dirname(abspath(__file__)), '..'))
 
-# Project version
-from __init__ import __version__
-
-# Valid arguments
+# Project modules
 from __init__ import OPTIONS, COMMANDS
-
-# Help
 from .help import print_help
-
-# Validation
 from validator.processor import Processor
-
-# Server
 from rpc.server import RPCServer
-
-# Blockchain
 from blockchain.blockchain import Blockchain
+from accounts.account import Account
+from util.database.database import Database
 
 
 def handle_input():
@@ -182,30 +176,169 @@ def handle_input():
     # Check which action the protocol should handle
     if cmd == 'account':
         if cmd_opt == 'create':
-            # TODO -> Create account (with input fields for the password etc.) and save it to the db
-            pass
+            print('Please provide the following information')
+
+            # Fetch the account name
+            account_name = input('Account name: ')
+
+            # Fetch the account password
+            account_password = getpass('Account password: ')
+
+            # Check if the user wants to use existing keys
+            if input('Use existing keys? (y/n): ').lower() == 'y':
+                # Fetch the public key
+                account_public_key = input('Public key: ')
+
+                # Fetch the private key
+                account_private_key = getpass('Private key: ')
+
+            else:
+                account_public_key = account_private_key = None
+
+            print('Creating account...')
+
+            # Create the account
+            account = Account(account_name, account_password, account_public_key, account_private_key)
+            account.save()
+
+            print('Account created successfully\n')
+
+            print('Account information')
+            print('Account name: ' + account.name)
+            print('Account public key: ' + account.public_key)
+            print('Account private key: ' + account.private_key[:15] + '...')
+
+            return True
 
         elif cmd_opt == 'export':
-            # TODO -> Export account-data into file (ask for pwd)
-            pass
+            print('Please provide the following information')
+
+            # Fetch the account name
+            account_name = input('Account name: ')
+
+            # Fetch the account password
+            account_password = getpass('Account password: ')
+
+            # Ask user for the file name
+            file_name = input('File name (default= account name): ')
+
+            print('Exporting account...')
+
+            # Load the account
+            account = Account(account_name, account_password)
+            account.load()
+
+            # Check if file name is provided
+            if file_name == '':
+                file_name = account.name
+
+            # Set the file directory
+            directory = join(cmd_opt_value, f'{file_name}.json') \
+                if cmd_opt_value.startswith('/') \
+                else join(getcwd(), cmd_opt_value, f'{file_name}.json')
+
+            try:
+                with open(directory, 'w') as f:
+                    json.dump({'public_key': account.public_key, 'private_key': account.private_key}, f, indent=4)
+
+            except Exception as e:
+                print('Failed to export account')
+
+                return False
+
+            print('Account exported successfully\n')
+
+            return True
 
         elif cmd_opt == 'import':
-            # TODO -> Import account-data from path (set new password)
-            pass
+            print('Please provide the following information')
+
+            # Fetch the account name
+            account_name = input('Account name: ')
+
+            # Fetch the account password
+            account_password = getpass('Account password: ')
+
+            # Ask user for the file name
+            file_name = input('File name: ')
+
+            print('Importing account...')
+
+            # Set the file directory
+            directory = join(cmd_opt_value, f'{file_name}') \
+                if cmd_opt_value.startswith('/') \
+                else join(getcwd(), cmd_opt_value, f'{file_name}')
+
+            try:
+                with open(directory, 'r') as f:
+                    account_data = json.load(f)
+
+            except Exception as e:
+                print('Failed to import account')
+
+                return False
+
+            print('Saving account...')
+
+            # Save the account to the database
+            account = Account(account_name, account_password, account_data['public_key'], account_data['private_key'])
+            success = account.save()
+
+            if not success:
+                print('Failed to save account')
+
+                return False
+
+            print('Account imported successfully\n')
+
+            print('Account information')
+            print('Account name: ' + account_name)
+            print('Account public key: ' + account_data['public_key'])
+            print('Account private key: ' + account_data['private_key'][:15] + '...')
+
+            return True
 
         elif cmd_opt == 'list':
-            # TODO -> List accounts
-            pass
+            # Fetch all accounts
+            account_names = Database.fetchall_from_db('SELECT name FROM accounts', {})
+
+            if not account_names:
+                print('No accounts found')
+
+                return True
+
+            print('--- Accounts ---')
+
+            if type(account_names) is list:
+                for index, account_name in enumerate(account_names):
+                    print(str(index + 1) + ': ' + account_name[0] if type(account_name) is tuple else account_name)
+
+            else:
+                print(f'1: {account_names}')
+
+            return True
 
     elif cmd == 'run':
         if cmd_opt == 'validate':
             password = getpass(prompt=f'Password for {cmd_opt_value}: ')
 
-            # TODO -> Find user account and get private-key from password and the stored "hash"
-            private_key = '5f83c097f06fa806dfd4023b429b704335df5c5377695bd5d85cd03950ce5b70'
+            print('Validating password...')
+
+            # Set account up
+            account = Account(cmd_opt_value, password)
+            success = account.load()
+
+            if not success:
+                print('Failed to validate password')
+
+                return False
+
+            print('Password validated successfully\n')
+
+            print('Initializing processor...')
 
             # Initialize the processor and start it
-            processor = Processor(private_key=private_key)
+            processor = Processor(private_key=account.private_key)
 
             try:
                 processor.start()

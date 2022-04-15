@@ -23,11 +23,11 @@ class Block:
 
         :param transactions: All transactions included into the block.
         :type transactions: [ :py:class: Transaction ]
-        :param validator: The public-key of the validator.
-        :type validator: str (hex-digest)
+        :param validator: The public key of the validator.
+        :type validator: str (hex digest)
         :param signature: Signed hash with the private-key of the validator.
-        :type signature: str (hex-digest)
-        :param previous_block: The last-block in the blockchain.
+        :type signature: str (hex digest)
+        :param previous_block: The last block in the blockchain.
         :type previous_block: :py:class: blockchain.block.Block
         """
 
@@ -186,11 +186,11 @@ class Block:
                 pass
 
         # Check if version exists
-        if not blockchain.versionstamps[self.version]:
+        if not blockchain.version_stamps[self.version]:
             return False
 
         # Check if version is allowed to use on this block
-        if datetime.strptime(blockchain.versionstamps[self.version], '%Y-%m-%d %H:%M:%S.%f').replace(
+        if datetime.strptime(blockchain.version_stamps[self.version], '%Y-%m-%d %H:%M:%S.%f').replace(
             tzinfo=timezone.utc) > self.timestamp:
             return False
 

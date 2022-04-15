@@ -37,7 +37,7 @@ class Processor:
         # Input of the rpc server and the other nodes
         self.input_queue = Queue()
 
-        # Transactions to add to chain (list of:py::class:`blockchain.Transaction`)
+        # Transactions to add to chain (list of :py::class:`blockchain.Transaction`)
         self.tx = []
 
         # Temporary blocks for the next epoch
@@ -105,18 +105,26 @@ class Processor:
 
             # TODO -> Emit block to other nodes
 
+            minimal_timestamp = self.blockchain.last_blocks[0].timestamp.timestamp() + 32
+
             # Collect all temporary blocks and transactions from queue, until time is over (32 seconds)
-            while datetime.now().timestamp() <= self.blockchain.last_blocks[0].timestamp.timestamp() + 32:
+            while datetime.now().timestamp() <= minimal_timestamp:
                 if not self.input_queue.empty():
                     # Fetch item from queue
                     item_queue = self.input_queue.get()
 
                     # Check if the item is a transaction
                     if item_queue['type'] == 'tx':
+                        # Check if the transaction is valid
+                        if not item_queue['data'].is_valid(self.blockchain):
+                            # Dev log
+                            print('Found an invalid transaction')
+
+                        # Add transaction to tx list
                         self.tx.append(item_queue['data'])
 
                     # Check if the item is a block
-                    elif item_queue['type'] == 'block':
+                    elif item_queue['type'] == 'temp_block':
                         # Check if the block is for this round
                         if item_queue['data'].index == block.index:
                             exists = False
@@ -206,11 +214,25 @@ class Processor:
                 4_096, tx_type='stake')
             test_tx.signature = '00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'
 
-            self.blockchain = Blockchain(genesis_tx=[test_tx])
+            test_tx2 = Transaction(
+                '00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+                '690ec29bae1791c134acfa0a5f49ebcc43491493e41f751ed319a67db8f75d6dc2acc288b7e7d160ed3362c9490b40ff399047e639a9a0862f6dcd227fbd9f99',
+                4_096, tx_type='tx')
+            test_tx2.signature = '00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'
+
+            self.blockchain = Blockchain(genesis_tx=[test_tx, test_tx2])
 
         # Start the rpc server
-        self.rpc_server = RPCServer(self.blockchain, processor_queue=self.input_queue, start=True,
-                                    db_q=self.database.db_q)
+        self.rpc_server = RPCServer(self.blockchain, processor_queue=self.input_queue, db_q=self.database.db_q)
+
+        # Start the rpc server
+        try:
+            self.rpc_server.start()
+
+        except:
+            print('Could not start RPC server')
+
+            return False
 
         # Start the database-handler
         self.thread.start()
@@ -247,7 +269,7 @@ class Processor:
         :rtype: bool
         """
 
-        # Check wether the thread is running or not
+        # Check whether the thread is running or not
         if not self.thread.is_alive():
             return False
 

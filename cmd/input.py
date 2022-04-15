@@ -1,4 +1,7 @@
 from getpass import getpass
+from random import choice
+from queue import Queue
+from time import sleep as time_sleep
 from os import getcwd
 import json
 
@@ -13,10 +16,17 @@ path.insert(0, join(dirname(abspath(__file__)), '..'))
 
 # Project modules
 from __init__ import OPTIONS, COMMANDS
+
 from .help import print_help
+
 from validator.processor import Processor
 from rpc.server import RPCServer
+from rpc.client import Client
+from rpc.blockchain_pb2 import Transaction as RPCTransaction
+
 from blockchain.blockchain import Blockchain
+from blockchain.transaction import Transaction
+
 from accounts.account import Account
 from util.database.database import Database
 
@@ -346,6 +356,9 @@ def handle_input():
             except:
                 processor.stop()
 
+            while True:
+                time_sleep(10)
+
         elif cmd_opt == 'synchronize':
             # TODO -> Sync the chain with the others
             pass
@@ -355,7 +368,7 @@ def handle_input():
 
             # Setup rpc server
             blockchain = Blockchain()
-            rpc_server = RPCServer(blockchain)
+            rpc_server = RPCServer(blockchain, Queue())
 
             # Serve and frequently sync the chain
             try:
@@ -385,8 +398,175 @@ def handle_input():
             pass
 
     elif cmd == 'transaction':
-        # TODO -> Create a transaction (ask for tx values)
-        pass
+        while True:
+            # Check if the account or the private key should be used
+            if input('Use account that exists on this device? (y/n): ').lower() == 'y':
+                account_name = input('Account name: ')
+                account_password = getpass(prompt=f'Password for {account_name}: ')
+
+                print('Loading account...')
+
+                # Set account up
+                account = Account(account_name, account_password)
+                success = account.load()
+
+                if not success:
+                    print('Failed to load account')
+
+                    return False
+
+                print('Account loaded successfully\n')
+
+            else:
+                print('Use private key instead')
+
+                private_key = input('Private key: ')
+
+                print('Loading account...')
+
+                account = Account('', '', private_key=private_key)
+                account.public_key = account.get_public_key(private_key)
+
+                if not account.public_key:
+                    print('Failed to load account')
+
+                    return False
+
+                print('Account loaded successfully\n')
+
+            # Ask who to send the transaction to and how much
+            recipient = input('Recipient (public key): ')
+            amount = input('Amount: ')
+
+            try:
+                amount = int(amount)
+
+            except:
+                print('Invalid amount')
+
+                return False
+
+            # Ask if user wants to add a tip to the transaction
+            if input('Add tip? (y/n): ').lower() == 'y':
+                tip = input('Please enter the tip: ')
+
+                try:
+                    tip = int(tip)
+
+                except:
+                    print('Invalid tip')
+
+                    return False
+
+            print('Fetching required data...')
+
+            # Fetch a known node
+            nodes = Database.fetchall_from_db('SELECT ip_address, port FROM nodes_archive', {})
+
+            while True:
+                if not nodes:
+                    # TODO -> Search for nodes
+
+                    print('No nodes found')
+
+                    # Check if the user wants to use the advaced-org node
+                    if input('Use advaced-org node? (y/n): ').lower() == 'y':
+                        nodes = [('localhost', 87878)]
+
+                        # TODO -> Change ip address to advaced-org ip address
+
+                        # Save the node to the database
+                        Database.push_to_db('INSERT INTO nodes_archive (ip_address, port) VALUES (:ip, :port)',
+                                            {'ip': nodes[0][0], 'port': nodes[0][1]})
+
+                if type(nodes) == list:
+                    # Select a random node
+                    node = choice(nodes)
+
+                else:
+                    node = nodes
+
+                # Ask if the user wants to use the node
+                if input(f'Use node {node[0]}:{node[1]}? (y/n): ').lower() == 'y':
+                    break
+
+            # Fetch current transaction fee
+            client = Client(node[0], node[1])
+            transaction_fee = client.getBaseFee() * 1.03125
+
+            # Check if the user wants to use a custom fee
+            print('The current transaction fee is VAC ' + str(transaction_fee))
+            if input('Use custom fee (Fee too low = transaction will not be included)? (y/n): ').lower() == 'y':
+                transaction_fee = input('Please enter the transaction fee: ')
+
+                try:
+                    transaction_fee = int(transaction_fee)
+
+                except:
+                    print('Invalid transaction fee')
+
+                    return False
+
+            print('Creating transaction...')
+
+            # Create transaction
+            transaction = Transaction(account.public_key, recipient, amount, fee=transaction_fee, tx_type='tx')
+
+            # Sign transaction
+            success = transaction.sign_tx(account.private_key)
+
+            if not success:
+                print('Failed to sign transaction')
+
+                return False
+
+            print('Transaction created successfully\n')
+
+            print('Transaction information')
+            print('Sender: ' + transaction.sender)
+            print('Recipient: ' + transaction.recipient)
+            print('Amount: ' + str(transaction.amount))
+            print('Fee: ' + str(transaction.fee))
+            print('Timestamp: ' + str(transaction.timestamp))
+            print('Hash: ' + transaction.hash)
+            print('Signature: ' + transaction.signature)
+
+            # Ask if the user wants to send the transaction
+            if not input('\nSend transaction? (y/n): ').lower() == 'y':
+                print('Transaction aborted')
+
+                return False
+
+            # Send transaction
+            print('Sending transaction...')
+
+            try:
+                success = client.addTransaction(RPCTransaction(sender=transaction.sender,
+                                                               recipient=transaction.recipient,
+                                                               amount=transaction.amount, fee=transaction.fee,
+                                                               type='tx', timestamp=str(transaction.timestamp),
+                                                               hash=transaction.hash, signature=transaction.signature))
+
+            except Exception as e:
+                # TODO -> Send to another node
+
+                print('Failed to send transaction')
+                print(e)
+
+                return False
+
+            if not success:
+                print('Failed to send transaction :(')
+
+                return False
+
+            print('Transaction sent successfully\n')
+
+            # Ask if the user wants to send another transaction
+            if input('Send another transaction? (y/n): ').lower() == 'y':
+                continue
+
+            break
 
     elif cmd == 'stake':
         # TODO -> Create a stake transaction (ask for tx values)

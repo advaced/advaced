@@ -117,13 +117,14 @@ class Client:
         :param tx: Given parameters of the transaction to add.
         :type tx: :py:class:`rpc.blockchain_pb2.Transaction`
 
-        :return: Status wether the transaction was added successful or not.
+        :return: Status whether the transaction was added successful or not.
         :rtype: :py:class:`rpc.blockchain_pb2.Success`
         """
 
         # TODO -> Send data to multiple servers
 
         try:
+            print(f'Sending transaction to {self.ip_address}:{self.port}')
             with insecure_channel(f'{self.ip_address}:{self.port}') as channel:
                 stub = BlockchainStub(channel)
 
@@ -139,7 +140,7 @@ class Client:
         :param tx: Given parameters of the transactions to add.
         :type tx: :py:class:`rpc.blockchain_pb2.Transactions`
 
-        :return: Status wether the transactions were added successful or not.
+        :return: Status whether the transactions were added successful or not.
         :rtype: :py:class:`rpc.blockchain_pb2.Success`
         """
 
@@ -151,6 +152,25 @@ class Client:
 
                 # Fetch the status of success and return it to the user
                 return stub.addTransactions(tx)
+
+        except:
+            return False
+
+    def getBaseFee(self):
+        """Get base fee of the blockchain.
+
+        :return: Base fee of the blockchain.
+        :rtype: :py:class:`rpc.blockchain_pb2.BaseFee`
+        """
+
+        # TODO -> Fetch from multiple servers and compare the values
+
+        try:
+            with insecure_channel(f'{self.ip_address}:{self.port}') as channel:
+                stub = BlockchainStub(channel)
+
+                # Fetch the base fee and return it to the user
+                return stub.getBaseFee()
 
         except:
             return False
@@ -192,4 +212,4 @@ if __name__ == '__main__':
         timestamp='2022-04-01 01:10:51.364127+00:00',
         hash='0a874cab556a53fc0b9ce256e4239c8c0ffb1d4f11e9854dd1244f37124c607e',
         signature='aa8a17a754a3007f9ee0d7ff9429f716f6f82327ad6dc1fd66fae546d20914bde43771e25ff75c33598f0e8680cbfd3ef557ce7532d2bc939ea1e5667e4ad860'
-        )))
+    )))

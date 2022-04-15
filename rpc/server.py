@@ -12,7 +12,7 @@ from os.path import dirname, abspath, join
 path.insert(0, join(dirname(abspath(__file__))))
 
 # Blockchain protobuf
-from blockchain_pb2 import Transaction as RPCTransaction, Block as RPCBlock, Transactions, Blocks, Success
+from blockchain_pb2 import Transaction as RPCTransaction, Block as RPCBlock, Transactions, Blocks, BaseFee, Success
 from blockchain_pb2_grpc import BlockchainServicer, add_BlockchainServicer_to_server as add_blockchain
 
 # Wallet protobuf
@@ -69,6 +69,9 @@ class BlockchainListener(BlockchainServicer):
 
         elif request.hash and request.signature:
             block_dict = fetch_block_from_signature(request.signature, request.hash)
+
+        else:
+            block_dict = None
 
         # Check if fetch was successful
         if not block_dict:
@@ -212,6 +215,9 @@ class BlockchainListener(BlockchainServicer):
 
         return Success(success=True)
 
+    def getBaseFee(self, request, context):
+        return BaseFee(base_fee=self.blockchain.last_blocks[0].base_fee)
+
 
 class WalletListener(WalletServicer):
     def __init__(self, blockchain, db_q=None):
@@ -299,7 +305,7 @@ class RPCServer():
         add_blockchain(BlockchainListener(self.blockchain, db_q=self.db_q), self.server)
         add_wallet(WalletListener(self.blockchain, db_q=self.db_q), self.server)
 
-        self.server.add_insecure_port(f'[::]:{RPC_PORT}')
+        self.server.add_insecure_port(f'[::]:{self.port}')
         self.server.start()
 
         return True

@@ -44,6 +44,11 @@ class BlockchainStub(object):
                 request_serializer=blockchain__pb2.Transactions.SerializeToString,
                 response_deserializer=blockchain__pb2.Success.FromString,
                 )
+        self.getBaseFee = channel.unary_unary(
+                '/blockchain.Blockchain/getBaseFee',
+                request_serializer=blockchain__pb2.BaseFeeRequest.SerializeToString,
+                response_deserializer=blockchain__pb2.BaseFee.FromString,
+                )
 
 
 class BlockchainServicer(object):
@@ -85,6 +90,12 @@ class BlockchainServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def getBaseFee(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_BlockchainServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -117,6 +128,11 @@ def add_BlockchainServicer_to_server(servicer, server):
                     servicer.addTransactions,
                     request_deserializer=blockchain__pb2.Transactions.FromString,
                     response_serializer=blockchain__pb2.Success.SerializeToString,
+            ),
+            'getBaseFee': grpc.unary_unary_rpc_method_handler(
+                    servicer.getBaseFee,
+                    request_deserializer=blockchain__pb2.BaseFeeRequest.FromString,
+                    response_serializer=blockchain__pb2.BaseFee.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -227,5 +243,22 @@ class Blockchain(object):
         return grpc.experimental.unary_unary(request, target, '/blockchain.Blockchain/addTransactions',
             blockchain__pb2.Transactions.SerializeToString,
             blockchain__pb2.Success.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def getBaseFee(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/blockchain.Blockchain/getBaseFee',
+            blockchain__pb2.BaseFeeRequest.SerializeToString,
+            blockchain__pb2.BaseFee.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

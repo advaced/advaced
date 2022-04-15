@@ -12,6 +12,8 @@ service Blockchain {
 
     rpc addTransaction (Transaction) returns (Success);
     rpc addTransactions (Transactions) returns (Success);
+
+    rpc getBaseFee (BaseFeeRequest) returns (BaseFee);
 }
 
 
@@ -81,6 +83,15 @@ message Block {
 message Blocks {
     repeated Block blocks = 1;
 }
+
+
+message BaseFeeRequest {}
+
+
+message BaseFee {
+    double baseFee = 1;
+}
+
 
 // State of success
 message Success {

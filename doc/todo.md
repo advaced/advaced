@@ -5,14 +5,13 @@ Here is a list of the things we are currently working on.
 - [x] Add the Advaced concept
 - [ ] Add modules documentation
   - [x] Add modules summary
-  - [ ] Add accounts documentation
+  - [x] Add accounts documentation
   - [x] Add block documentation
   - [x] Add blockchain documentation
-  - [ ] Add consensus documentation
-  - [ ] Add console documentation
+  - [x] Add consensus documentation
+  - [ ] Add cmd documentation
   - [ ] Add log documentation
   - [ ] Add node documentation
-  - [ ] Add peer-2-peer documentation
   - [ ] Add validator documentation
 - [ ] Create a working network that consists of nodes
   - [ ] Add peer-2-peer connection

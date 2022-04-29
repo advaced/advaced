@@ -66,7 +66,18 @@ OPTIONS = {
         'values': ['full', 'light'],
 
         'description': 'Set synchronization mode ("full" or "light") (default: full)'
-    }
+    },
+
+    # Whether it is a genesis validation or not
+    'genesis': {
+        'min': '-g',
+        'standard': '--genesis',
+        'max': '--genesis-validation',
+
+        'value': False,
+
+        'description': 'Create a new blockchain instead of working on an existing one'
+    },
 }
 
 # Set commands up

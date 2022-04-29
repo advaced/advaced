@@ -6,6 +6,9 @@ from queue import Queue
 from time import sleep as time_sleep
 from datetime import datetime, timezone, timedelta
 
+# Data transfer
+from json import dumps as json_dumps
+
 # Add to path
 from sys import path
 from os.path import dirname, abspath, join
@@ -22,6 +25,9 @@ from blockchain.blockchain import Blockchain
 
 from rpc.server import RPCServer
 from accounts import Wallet
+
+from node import Client as NodeClient
+from node.server import Server as NodeServer
 
 
 class Processor:
@@ -103,8 +109,10 @@ class Processor:
             # Add block to own temp block
             self.validator.temp_blocks.append(block)
 
-            # TODO -> Emit block to other nodes
+            # Emit the temp block to the network
+            self.node_client.send_message(json_dumps({'type': 'temp_block', 'data': block.to_json()}).encode('utf-8'))
 
+            # Set the timestamp that at least should be reached before the next block
             minimal_timestamp = self.blockchain.last_blocks[0].timestamp.timestamp() + 32
 
             # Collect all temporary blocks and transactions from queue, until time is over (32 seconds)
@@ -141,17 +149,39 @@ class Processor:
                         elif item_queue['data'].index == block.index + 1:
                             self.next_epoch.append(item_queue['data'])
 
-                    # TODO -> Share the block with other nodes
-
                 else:
                     time_sleep(.01)
 
-            # Select the winner block of the temporary blocks
-            winner_block = self.validator.select_winner(self.blockchain, True)
+            # Select the winner block of the temporary blocks and add it to the winner blocks list
+            self.validator.winner_blocks.append(self.validator.select_winner(self.blockchain, True))
+
+            # Set the current time plus 5 seconds to collect the winner blocks
+            minimal_timestamp = datetime.now().timestamp() + 5
 
             # Share winner with other nodes, fetch their winner
-            # TODO -> Wait 5 seconds until all possible winners arrived at the input_queue, then select the one with
-            #  most of the "votes"
+            while datetime.now().timestamp() <= minimal_timestamp:
+                if not self.input_queue.empty():
+                    # Fetch item from queue
+                    item_queue = self.input_queue.get()
+
+                    # Check if the item is a block
+                    if item_queue['type'] == 'winner_block':
+                        # Check if the block is for this round
+                        if item_queue['data'] == self.validator.winner_blocks[0].index:
+                            self.validator.winner_blocks.append(item_queue['data'])
+
+            # Compares the winner blocks
+            winner_block_points = {}
+
+            for winner_block in self.validator.winner_blocks:
+                if winner_block in winner_block_points:
+                    winner_block_points[winner_block] += 1
+
+                else:
+                    winner_block_points[winner_block] = 1
+
+            # Select the winner block
+            winner_block = max(winner_block_points, key=winner_block_points.get)
 
             # Add block to the blockchain
             success = self.blockchain.add_block(winner_block)
@@ -197,7 +227,7 @@ class Processor:
         # Check if stop-event is set
         if self.stop_event.is_set():
             self.stop_event = Event()
-            self.db_thread = Thread(target=self.run)
+            self.thread = Thread(target=self.run)
 
         # Start database handler
         self.database = Database()
@@ -234,7 +264,15 @@ class Processor:
 
             return False
 
-        # Start the database-handler
+        # Set the node client and server up
+        self.node_client = NodeClient(self.database)
+        self.node_server = NodeServer(self.input_queue, self.blockchain, client=self.node_client, database=self.database)
+
+        # Start the node client and server
+        self.node_server.start()
+        self.node_client.start()
+
+        # Start the database handler
         self.thread.start()
 
         return True

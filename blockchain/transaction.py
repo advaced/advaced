@@ -26,7 +26,7 @@ class Transaction:
         :type fee: int
         :param type: tx (transaction), stake (staking event), claim (claiming event), burn (expropriation event)
         :type type: str
-        :param tip: Tip for the validators (if transactor wants to donate some money to get prioritized).
+        :param tip: Tip for the validators (if the transactor wants to donate some money to get prioritized).
         :type tip: int
         """
 
@@ -168,7 +168,7 @@ class Transaction:
         }
 
     def from_dict(self, dict_data) -> bool:
-        """Create transaction from dict-data
+        """Create transaction from dict-data.
 
         :param dict_data: Dictionary that includes the transaction-values
         :type dict_data: dict
@@ -189,7 +189,7 @@ class Transaction:
                 self.signature = dict_data['signature']
 
             self.timestamp = datetime.strptime(dict_data['timestamp'], '%Y-%m-%d %H:%M:%S.%f%z').replace(
-                tzinfo=timezone.utc)
+                                               tzinfo=timezone.utc)
 
         # Return the status
         except:
@@ -218,22 +218,6 @@ class Transaction:
         # Convert json to dictionary
         dict_data = json.loads(json_data)
 
-        try:
-            # Set the data to the transaction
-            self.sender = dict_data['sender']
-            self.recipient = dict_data['recipient']
-            self.amount = dict_data['amount']
-            self.fee = dict_data['fee']
-            self.type = dict_data['type']
-
-            # Check if the signature is included in the json-data
-            if dict_data['signature']:
-                self.signature = dict_data['signature']
-
-            self.timestamp = datetime.strptime(dict_data['timestamp'], '%d-%m-%y %H:%M:%S').replace(tzinfo=timezone.utc)
-
-        # Return the status
-        except KeyError:
-            return False
+        self.from_dict(dict_data)
 
         return True

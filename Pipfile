@@ -9,8 +9,8 @@ ecdsa = "*"
 grpcio = "*"
 grpcio-tools = "*"
 bcrypt = "*"
-pycrypto = "*"
 pyzmq = "*"
+cryptography = "*"
 
 [dev-packages]
 

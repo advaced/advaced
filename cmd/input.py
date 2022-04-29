@@ -353,11 +353,23 @@ def handle_input():
             try:
                 processor.start()
 
-            except:
+            except Exception as e:
                 processor.stop()
 
-            while True:
+                # Debug
+                raise e
+
+                return False
+
+            while processor.thread.is_alive():
+                # Dev log
+                print('Processor is running...')
+
                 time_sleep(10)
+
+            print('Processor stopped')
+
+            return True
 
         elif cmd_opt == 'synchronize':
             # TODO -> Sync the chain with the others

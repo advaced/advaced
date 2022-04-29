@@ -25,7 +25,10 @@ class Validator():
         self.wallet = Wallet(public_key, private_key)
 
         # The temporary blocks for the next validation
-        self.temp_blocks = [ ]
+        self.temp_blocks = []
+
+        # The winner blocks of this validation
+        self.winner_blocks = []
 
 
     def validate_block(self, block: Block):
@@ -93,7 +96,7 @@ class Validator():
                     attendees[i] = None
 
                 else:
-                    # Drop the second, beacause the first score is bigger or,
+                    # Drop the second, because the first score is bigger or,
                     # even if they are equal, the first one has a better rank
                     attendees[i][0] += attendees[i + 1][0]
                     attendees[i + 1] = None

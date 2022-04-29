@@ -1,13 +1,13 @@
-# Proof-of-stake (PoS)
+# Delegated proof-of-stake (PoS)
 Proof of stake is a type of [consensus mechanism](https://en.wikipedia.org/wiki/Consensus_(computer_science)) used by decentralized networks to achieve distributed consensus.
 Unlike [proof-of-work](https://en.wikipedia.org/wiki/Proof_of_stake) a miner is not in need of verifying a block with energy and hardware ressources, but to verify it with a stake of VAC. 
 
-## Staking and its Incentive
+## Staking and its incentive
 As miners in proof-of-work validators are responsible for the creation of new blocks and the ordering of transactions so that every node in the network can agree on the current state of it.
-A minimum of 64 Advaced is required to become a validator.
+A minimum of 4,096 delegated Advaced is required to become a validator.
 A validator is (pseudo) randomly selected by the network.
 To create an incentive to become a validator, every time a block is validated the validator becomes a reward.
-Every 1,024,000 blocks this reward is halfed.
+Every 1,048,576 blocks this reward is halfed.
 
 ## Vulnerabilities
 If someone wants to attack the network he must own 51% of the network to do it. 
@@ -22,4 +22,4 @@ Positive aspects of proof-of-stake:
 - The spectrum of vulnerabilities is not as large as in other consens mechanisms. Only the 51% attack could become a problem, but the probability for such an event is very low.
 
 ## Staking pools
-If an individual can't afford as much coins as needed to become a validator he could easily join a staking pool, where many individual stake their coins together to afford a stake.
+If an individual can't afford as much coins as needed to become a validator he could easily join a staking pool, where many individual delegate their coins to, to afford a stake.

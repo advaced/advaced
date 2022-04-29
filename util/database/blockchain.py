@@ -401,3 +401,39 @@ def fetch_version_stamps(network='mainnet', db=None):
         version_stamps[response[0]] = response[1]
 
     return version_stamps
+
+
+def add_version_stamp(version, timestamp, network, public_key, signature, db_q=None):
+    """Add a version stamp to the database.
+
+    :param version: Version that should be added
+    :type version: str
+    :param timestamp: Timestamp that should be added
+    :type timestamp: int
+    :param network: Network that the stamp should be added to
+    :type network: str
+    :param public_key: Public key of the account to verify the version stamps signature.
+    :type public_key: str
+    :param signature: Signature of the version stamp.
+    :type signature: str
+    :param db_q: Database query to use.
+    :type db_q: :py:class:`queue.Queue`
+
+    :return: Status of the success of the operation.
+    :rtype: bool
+    """
+
+    # Check if a database query was parsed
+    if db_q:
+        db_q.put(('INSERT INTO version_stamps (version, timestamp, network, public_key, signature) VALUES (:version, ' +
+                  ':timestamp, :network, :public_key, :signature)',
+                  {'version': version, 'timestamp': timestamp, 'network': network, 'public_key': public_key,
+                   'signature': signature}))
+
+    else:
+        Database.push_to_db('INSERT INTO version_stamps (version, timestamp, network, public_key, signature) VALUES ' +
+                            '(:version, :timestamp, :network, :public_key, :signature)',
+                            {'version': version, 'timestamp': timestamp, 'network': network, 'public_key': public_key,
+                             'signature': signature})
+
+    return True

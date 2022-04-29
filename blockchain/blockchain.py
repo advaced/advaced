@@ -13,7 +13,7 @@ from blockchain.block import Block
 
 # Database-handler
 from util.database.blockchain import (add_block, fetch_block, fetch_transaction_block_index, fetch_transactions,
-                                      fetch_version_stamps)
+                                      fetch_version_stamps, add_version_stamp)
 from util.database.cache import load_cache
 
 
@@ -50,7 +50,6 @@ class Blockchain:
 
         # Check if the cache is valid
         if not self.valid_cache:
-            print('brar')
             return False
 
         # Check if there are any blocks that are not cached
@@ -319,3 +318,28 @@ class Blockchain:
             return True
 
         return False
+
+    def add_version_stamp(self, version, timestamp, network, public_key, signature, db_q=None):
+        """Add a version stamp to the cache and the database.
+
+        :param version: Version that should be added
+        :type version: str
+        :param timestamp: Timestamp that should be added
+        :type timestamp: int
+        :param network: Network that the stamp should be added to
+        :type network: str
+        :param public_key: Public key of the account to verify the version stamps signature.
+        :type public_key: str
+        :param signature: Signature of the version stamp.
+        :type signature: str
+        :param db_q: Database query to use.
+        :type db_q: :py:class:`queue.Queue`
+
+        :return: Status of the success of the operation.
+        :rtype: bool
+        """
+        # Add version stamp to cache
+        self.version_stamps[timestamp] = version
+
+        # Add version stamp to database
+        return add_version_stamp(version, timestamp, network, public_key, signature, db_q)

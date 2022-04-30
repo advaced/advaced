@@ -26,7 +26,7 @@ from blockchain.blockchain import Blockchain
 from rpc.server import RPCServer
 from accounts import Wallet
 
-from node import Client as NodeClient
+from node.client import Client as NodeClient
 from node.server import Server as NodeServer
 
 
@@ -60,6 +60,9 @@ class Processor:
 
         # 3. Check if enough VAC is staked to become a validator
         if Wallet.stake(self.validator.wallet.public_key, self.blockchain) < 4_096:
+            # Dev log
+            print("Not enough VAC staked to become a validator")
+
             return False
 
         # 4. Advertise to the network
@@ -124,15 +127,20 @@ class Processor:
                     # Check if the item is a transaction
                     if item_queue['type'] == 'tx':
                         # Check if the transaction is valid
-                        if not item_queue['data'].is_valid(self.blockchain):
+                        if item_queue['data'].is_valid(self.blockchain):
+                            # Add transaction to tx list
+                            self.tx.append(item_queue['data'])
+
+                        else:
                             # Dev log
                             print('Found an invalid transaction')
 
-                        # Add transaction to tx list
-                        self.tx.append(item_queue['data'])
-
                     # Check if the item is a block
                     elif item_queue['type'] == 'temp_block':
+                        # Check if the block is valid
+                        if not item_queue['data'].is_valid(self.blockchain):
+                            continue
+
                         # Check if the block is for this round
                         if item_queue['data'].index == block.index:
                             exists = False
@@ -147,13 +155,32 @@ class Processor:
 
                         # Check if the block is for the next round
                         elif item_queue['data'].index == block.index + 1:
-                            self.next_epoch.append(item_queue['data'])
+                            exists = False
+
+                            for tmp in self.next_epoch:
+                                if tmp.validator == item_queue['data'].validator:
+                                    exists = True
+                                    break
+
+                            if not exists:
+                                self.next_epoch.append(item_queue['data'])
+
+                    elif item_queue['type'] == 'winner_block':
+                        # Check if the block is valid
+                        if not item_queue['data'].is_valid(self.blockchain):
+                            continue
+
+                        # Check if the block is for this round
+                        if not item_queue['data'].index == block.index:
+                            continue
+
+                        self.validator.winner_blocks.append(item_queue['data'])
 
                 else:
                     time_sleep(.01)
 
             # Select the winner block of the temporary blocks and add it to the winner blocks list
-            self.validator.winner_blocks.append(self.validator.select_winner(self.blockchain, True))
+            self.validator.winner_blocks.append(self.validator.select_winner(self.blockchain, clear_temp=True))
 
             # Set the current time plus 5 seconds to collect the winner blocks
             minimal_timestamp = datetime.now().timestamp() + 5
@@ -240,15 +267,15 @@ class Processor:
             # Test values
             test_tx = Transaction(
                 '00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
-                '690ec29bae1791c134acfa0a5f49ebcc43491493e41f751ed319a67db8f75d6dc2acc288b7e7d160ed3362c9490b40ff399047e639a9a0862f6dcd227fbd9f99',
+                '6ae5c2a44e5ae92193de10297879955061db681b3099d9aa06ef31791ce2153ec9cebf2e4f8644e84a2d028201c1a8de438ef43f2a18e83b9ff0b850e5f01638',
                 4_096, tx_type='stake')
             test_tx.signature = '00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'
 
             test_tx2 = Transaction(
                 '00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
-                '690ec29bae1791c134acfa0a5f49ebcc43491493e41f751ed319a67db8f75d6dc2acc288b7e7d160ed3362c9490b40ff399047e639a9a0862f6dcd227fbd9f99',
+                '6ae5c2a44e5ae92193de10297879955061db681b3099d9aa06ef31791ce2153ec9cebf2e4f8644e84a2d028201c1a8de438ef43f2a18e83b9ff0b850e5f01638',
                 4_096, tx_type='tx')
-            test_tx2.signature = '00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'
+            test_tx2.signature = '00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 '
 
             self.blockchain = Blockchain(genesis_tx=[test_tx, test_tx2])
 
@@ -266,7 +293,8 @@ class Processor:
 
         # Set the node client and server up
         self.node_client = NodeClient(self.database)
-        self.node_server = NodeServer(self.input_queue, self.blockchain, client=self.node_client, database=self.database)
+        self.node_server = NodeServer(self.input_queue, self.blockchain, client=self.node_client,
+                                      database=self.database)
 
         # Start the node client and server
         self.node_server.start()

@@ -73,11 +73,11 @@ def handle_input():
                 # Check if argument is this option
                 if (argument == (option['min'] if 'min' in option else None) or
                     argument == (option['standard'] if 'standard' in option else None) or
-                    argument == (option['max'] if 'max' in option else None)):
+                   argument == (option['max'] if 'max' in option else None)):
                     opt.append(name)
 
                     # Check if a value should be provided
-                    if option['value'] == True and option['value-required'] == True:
+                    if option['value'] is True and option['value-required'] is True:
                         if len(argv) == pos + 1:
                             return False
 
@@ -94,11 +94,11 @@ def handle_input():
                             break
 
                     # Check if a value could be provided
-                    elif option['value'] == True and not option['value-required']:
+                    elif option['value'] is True and not option['value-required']:
 
                         # Check if it is not a value
                         if (not is_option(argv[pos + 1]) and not is_command(argv[pos + 1]) and
-                            not is_command_option(argv[pos + 1])):
+                           not is_command_option(argv[pos + 1])):
                             if len(argv) == pos + 1:
                                 return False
 
@@ -124,7 +124,7 @@ def handle_input():
                 # Check if argument is this command
                 if (argument == (command['min'] if 'min' in command else None) or
                     argument == (command['standard'] if 'standard' in command else None) or
-                    argument == (command['max'] if 'max' in command else None)):
+                   argument == (command['max'] if 'max' in command else None)):
                     cmd = name
                     found = True
 
@@ -140,19 +140,19 @@ def handle_input():
                 # Check if argument is this command-option
                 if (argument == (cmd_option['min'] if 'min' in cmd_option else None) or
                     argument == (cmd_option['standard'] if 'standard' in cmd_option else None) or
-                    argument == (cmd_option['max'] if 'max' in cmd_option else None)):
+                   argument == (cmd_option['max'] if 'max' in cmd_option else None)):
                     cmd_opt = name
                     found = True
 
                     # Check if a value could be provided
-                    if (cmd_option['value'] == True and
-                        (cmd_option['value-required'] if 'value-required' in cmd_option else False) == False):
+                    if (cmd_option['value'] is True and (cmd_option['value-required']
+                       if 'value-required' in cmd_option else False) is False):
                         if len(argv) <= pos + 1:
                             return False
 
                         # Check if it is not a value
                         if (not is_option(argv[pos + 1]) and not is_command(argv[pos + 1]) and
-                            not is_command_option(argv[pos + 1])):
+                           not is_command_option(argv[pos + 1])):
                             if len(argv) <= pos + 1:
                                 break
 
@@ -162,7 +162,7 @@ def handle_input():
                             break
 
                     # Check if a value should be provided
-                    elif cmd_option['value'] == True and cmd_option['value-required'] == True:
+                    elif cmd_option['value'] is True and cmd_option['value-required'] is True:
                         if len(argv) <= pos + 1:
                             return False
 
@@ -251,7 +251,7 @@ def handle_input():
                 with open(directory, 'w') as f:
                     json.dump({'public_key': account.public_key, 'private_key': account.private_key}, f, indent=4)
 
-            except Exception as e:
+            except:
                 print('Failed to export account')
 
                 return False
@@ -283,7 +283,7 @@ def handle_input():
                 with open(directory, 'r') as f:
                     account_data = json.load(f)
 
-            except Exception as e:
+            except:
                 print('Failed to import account')
 
                 return False
@@ -348,23 +348,20 @@ def handle_input():
             print('Initializing processor...')
 
             # Initialize the processor and start it
-            processor = Processor(private_key=account.private_key)
+            processor = Processor(private_key=account.private_key, genesis_validation=('genesis' in opt))
 
-            try:
-                processor.start()
+            # try:
+            processor.start()
+            # except Exception as e:
+            #     processor.stop()
+            #
+            #     # Debug
+            #     raise e
 
-            except Exception as e:
-                processor.stop()
-
-                # Debug
-                raise e
-
-                return False
+            # Dev log
+            print('Processor is running...')
 
             while processor.thread.is_alive():
-                # Dev log
-                print('Processor is running...')
-
                 time_sleep(10)
 
             print('Processor stopped')

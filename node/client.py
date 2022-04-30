@@ -29,6 +29,7 @@ class Client:
         # Set the socket up
         context = Context()
         self.socket = context.socket(REQ)
+        self.connected_nodes = []
 
         # Set the thread up
         self.thread = Thread(target=self.run)
@@ -46,6 +47,10 @@ class Client:
         # Check if database is running
         if not self.thread.is_alive():
             return False
+
+        # Check if there are nodes to send to
+        if len(self.connected_nodes) == 0:
+            return True
 
         # Send message
         try:
@@ -80,29 +85,51 @@ class Client:
                 continue
 
             try:
+                # Connect to node
                 self.socket.connect(f'tcp://{node[0]}:{node[1]}')
+
+                # Add to connected nodes
+                self.connected_nodes.append((node[0], node[1]))
             except:
                 # Dev log
                 print(f'Failed to connect to node {node[0]}:{node[1]}')
 
         # Run the node client
         while not self.stop_event.is_set():
+            # Check if the list of connected nodes is empty
+            if not self.connected_nodes:
+                # Sleep
+                time_sleep(20)
+
+                continue
+
             # Send keep alive message
             try:
                 self.socket.send(json.dumps({'type': 'keep_alive', 'data': None}))
+
+                # Receive response
+                response = self.socket.recv()
+
+                if not response:
+                    # Dev log
+                    print('No response from the nodes')
             except:
                 # Dev log
                 print('Failed to send keep alive message to node')
 
-            # Receive response
-            response = self.socket.recv()
-
-            if not response:
-                # Dev log
-                print('No response from the nodes')
-
             # Sleep for a while
             time_sleep(20)
+
+        # Dev log
+        print('Disconnecting from nodes')
+
+        # Disconnect from all nodes
+        for node in self.connected_nodes:
+            try:
+                self.socket.disconnect(f'tcp://{node[0]}:{node[1]}')
+            except:
+                # Dev log
+                print(f'Failed to disconnect from node {node[0]}:{node[1]}')
 
     def start(self):
         """Starts the node server thread.

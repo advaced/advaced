@@ -1,5 +1,5 @@
 -- Blockchain table v1.0.0
-CREATE TABLE blockchain (
+CREATE TABLE IF NOT EXISTS blockchain (
     block_index INT(32) UNIQUE NOT NULL,
     previous_hash VARCHAR(64) NOT NULL,
 
@@ -15,7 +15,7 @@ CREATE TABLE blockchain (
 );
 
 -- Transaction table v1.0.0
-CREATE TABLE transactions (
+CREATE TABLE IF NOT EXISTS transactions (
     block_index INT(32) NOT NULL,
 
     sender VARCHAR(128) NOT NULL,
@@ -32,7 +32,7 @@ CREATE TABLE transactions (
 );
 
 -- Wallets
-CREATE TABLE accounts (
+CREATE TABLE IF NOT EXISTS accounts (
     name VARCHAR(32) UNIQUE NOT NULL,
     password_hash VARCHAR(128) NOT NULL,
 
@@ -40,13 +40,13 @@ CREATE TABLE accounts (
 );
 
 -- Known-nodes-archive
-CREATE TABLE nodes_archive (
+CREATE TABLE IF NOT EXISTS nodes_archive (
     ip_address VARCHAR(32) NOT NULL,
     port INT(11) NOT NULL
 );
 
 -- Version stamps
-CREATE TABLE version_stamps (
+CREATE TABLE IF NOT EXISTS version_stamps (
     version VARCHAR(16) NOT NULL,
     timestamp DATETIME NOT NULL,
 
@@ -57,12 +57,12 @@ CREATE TABLE version_stamps (
 );
 
 -- Developer public-keys
-CREATE TABLE dev_keys (
+CREATE TABLE IF NOT EXISTS dev_keys (
     public_key VARCHAR(128) NOT NULL
 );
 
 -- Nodes to burn
-CREATE TABLE to_burn (
+CREATE TABLE IF NOT EXISTS to_burn (
     address VARCHAR(128) NOT NULL,
 
     -- The wrong data the block spread

@@ -1,4 +1,4 @@
-from database import Database
+from util.database.database import Database
 
 
 def fetch_known_nodes(database=None):

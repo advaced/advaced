@@ -10,8 +10,10 @@ from time import sleep as time_sleep
 # Path of the database
 from __init__ import DATABASE_FILE
 
+from util.database.initialize import create_database
 
-class Database():
+
+class Database:
     def __init__(self, manual=False):
         """Sets up the database connection values.
 
@@ -24,6 +26,9 @@ class Database():
 
         # Database-handling thread
         self.db_thread = Thread(target=self.database_handler)
+
+        # Initialize the database
+        create_database(overwrite=True)
 
         if not manual:
             self.db_thread.start()

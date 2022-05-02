@@ -61,14 +61,6 @@ CREATE TABLE IF NOT EXISTS dev_keys (
     public_key VARCHAR(128) NOT NULL
 );
 
--- Nodes to burn
-CREATE TABLE IF NOT EXISTS to_burn (
-    address VARCHAR(128) NOT NULL,
-
-    -- The wrong data the block spread
-    data TEXT NOT NULL
-);
-
 -- Development tests
 INSERT INTO version_stamps VALUES('1.0.0', '2022-03-10 10:07:17.687452', 'mainnet',
  '0521b81c2857947d986722fffdd54ccda0114a635ff19d6bc725e080cf26c7f76b0185a8a87f257e86d9d722922dabcdfffe8e06281b1295a539a2a081e4d56a', -- pub key

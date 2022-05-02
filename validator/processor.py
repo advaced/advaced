@@ -221,8 +221,9 @@ class Processor:
 
             print('Added block successfully:', winner_block.index)
 
-            # Reset temporary blocks
+            # Reset temporary and winner blocks
             self.validator.temp_blocks = []
+            self.validator.winner_blocks = []
 
             # Every 10 blocks check if whole chain is valid
             if winner_block.index % 10 == 0:
@@ -264,6 +265,12 @@ class Processor:
             self.blockchain = Blockchain()
 
         else:
+            # Check if the database is empty
+            if self.database.fetchone('SELECT * FROM blockchain', {}) or self.database.fetchone('SELECT * FROM transactions', {}):
+                # Reset the chain
+                self.database.push_to_db('DELETE FROM blockchain', {})
+                self.database.push_to_db('DELETE FROM transactions', {})
+
             # Test values
             test_tx = Transaction(
                 '00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',

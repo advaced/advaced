@@ -296,7 +296,7 @@ class Wallet:
                 amount_left = tx.amount
 
                 while amount_left > 0:
-                    # Check if something really went wrong (if this occurres the stake of the account is negative and
+                    # Check if something really went wrong (if this occurred the stake of the account is negative and
                     # not allowed)
                     if len(stakes) == 0:
                         return 0

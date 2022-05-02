@@ -59,7 +59,7 @@ class Transaction:
         :return: Hex-digest of transaction-hash
         :rtype: str (hex-digest)
         """
-        return sha3_256((str(self.sender) + str(self.recipient) + str(self.amount) + str(self.fee) +
+        return sha3_256((str(self.sender) + str(self.recipient) + str(float(self.amount)) + str(float(self.fee)) +
                          str(self.type) + str(self.timestamp)).encode()).hexdigest()
 
     def sign_tx(self, private_key):
@@ -142,8 +142,8 @@ class Transaction:
             if blockchain.tx_included(self):
                 return False
 
-            # TODO -> Check wether the sender (if its a tx or stake) can afford it
-            #         (or at unstake if the sender has enough stake or at burn if the burning is allowed)
+            # TODO -> Check whether the sender (if its a tx or stake) can afford it
+            #         (or at unstake, if the sender has enough stake)
 
         return True
 

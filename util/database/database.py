@@ -42,7 +42,7 @@ class Database:
         :param sql_data: Arguments to replace in the command.
         :type sql_data: dict
 
-        :return: Status wether the execution was successful or not.
+        :return: Status whether the execution was successful or not.
         """
         # Set the database connection up
         connection = connect(DATABASE_FILE)
@@ -51,9 +51,9 @@ class Database:
         try:
             cls.execute_sql(connection, sql_command, sql_data)
 
-        except Exception as error:
+        except:
             # Development Log
-            print(error)
+            print('[Database] Error while pushing to the database.')
 
             return False
 
@@ -258,7 +258,7 @@ class Database:
         :rtype: bool
         """
 
-        # Check wether the database-thread is running or not
+        # Check whether the database-thread is running or not
         if not self.db_thread.is_alive():
             return False
 

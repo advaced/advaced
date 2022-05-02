@@ -131,8 +131,9 @@ class Client:
                 # Fetch the status of success and return it to the user
                 return stub.addTransaction(tx)
 
-        except:
-            return False
+        except Exception as e:
+            raise e
+            # return False
 
     def addTransactions(self, tx):
         """Add transactions to blockchain.
@@ -204,12 +205,12 @@ if __name__ == '__main__':
     from rpc.blockchain_pb2 import Transaction
 
     print(cl.addTransaction(Transaction(
-        sender='690ec29bae1791c134acfa0a5f49ebcc43491493e41f751ed319a67db8f75d6dc2acc288b7e7d160ed3362c9490b40ff399047e639a9a0862f6dcd227fbd9f99',
-        recipient='187',
-        amount=420,
-        fee=2,
+        sender='6ae5c2a44e5ae92193de10297879955061db681b3099d9aa06ef31791ce2153ec9cebf2e4f8644e84a2d028201c1a8de438ef43f2a18e83b9ff0b850e5f01638',
+        recipient='sdfasdfadsfdasfawergraeg',
+        amount=1,
+        fee=1,
         type='tx',
-        timestamp='2022-04-01 01:10:51.364127+00:00',
-        hash='0a874cab556a53fc0b9ce256e4239c8c0ffb1d4f11e9854dd1244f37124c607e',
-        signature='aa8a17a754a3007f9ee0d7ff9429f716f6f82327ad6dc1fd66fae546d20914bde43771e25ff75c33598f0e8680cbfd3ef557ce7532d2bc939ea1e5667e4ad860'
+        timestamp='2022-05-02 15:23:55.578422+00:00',
+        hash='5c93e060d3fcf716d97ea0f7ca324770054803b3ae11f5ef17701926699d547f',
+        signature='2397c39325d09acb3d5ae0d9ec6353c539636f74457c8f8e7719aaaf58a105adf353a373848db0d28201b58c1da30e607d4a588a895d313d2704ff836931795e'
     )))

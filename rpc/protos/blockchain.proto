@@ -48,8 +48,8 @@ message Transaction {
     string sender = 1;
     string recipient = 2;
 
-    uint64 amount = 3;
-    uint32 fee = 4;
+    double amount = 3;
+    double fee = 4;
 
     string type = 5;
     string timestamp = 6;

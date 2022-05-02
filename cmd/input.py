@@ -28,6 +28,7 @@ from blockchain.blockchain import Blockchain
 from blockchain.transaction import Transaction
 
 from accounts.account import Account
+from accounts.wallet import Wallet
 from util.database.database import Database
 
 
@@ -345,6 +346,15 @@ def handle_input():
 
             print('Password validated successfully\n')
 
+            # Check if the user wants to create a new blockchain
+            if 'genesis' in opt:
+                # Check if the user wants to reset the database
+                if not input('Are you sure that you want to create a new blockchain and with that reset the database? '
+                             '(y/n): ').lower() == 'y':
+                    print('Aborting...')
+
+                    return True
+
             print('Initializing processor...')
 
             # Initialize the processor and start it
@@ -455,12 +465,12 @@ def handle_input():
 
                 return False
 
+            tip = None
+
             # Ask if user wants to add a tip to the transaction
             if input('Add tip? (y/n): ').lower() == 'y':
-                tip = input('Please enter the tip: ')
-
                 try:
-                    tip = int(tip)
+                    tip = int(input('Please enter the tip: '))
 
                 except:
                     print('Invalid tip')
@@ -479,7 +489,7 @@ def handle_input():
                     print('No nodes found')
 
                     # Check if the user wants to use the advaced-org node
-                    if input('Use advaced-org node? (y/n): ').lower() == 'y':
+                    if input('Use the advaced foundation node instead? (y/n): ').lower() == 'y':
                         nodes = [('localhost', 87878)]
 
                         # TODO -> Change ip address to advaced-org ip address
@@ -519,7 +529,8 @@ def handle_input():
             print('Creating transaction...')
 
             # Create transaction
-            transaction = Transaction(account.public_key, recipient, amount, fee=transaction_fee, tx_type='tx')
+            transaction = Transaction(account.public_key, recipient, amount, fee=transaction_fee + (tip if tip else 0),
+                                      tx_type='tx')
 
             # Sign transaction
             success = transaction.sign_tx(account.private_key)

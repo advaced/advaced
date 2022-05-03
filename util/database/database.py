@@ -1,5 +1,4 @@
 # Database handling
-from distutils.log import error
 from sqlite3 import connect, Connection
 
 from queue import Queue

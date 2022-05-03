@@ -4,7 +4,6 @@ install:
 	python3 ./build
 	cython -3 --embed -o ./out/advaced.c ./__main__.py
 	gcc -Os -I /usr/include/python3.10 -o /bin/advaced ./out/advaced.c -lpython3.10 -lpthread -lm -lutil -ldl
-	rm ./out/advaced.c
 
 	chmod +rwx /bin/advaced
 	chmod +rwx /lib/advaced

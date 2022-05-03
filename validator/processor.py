@@ -13,9 +13,15 @@ from json import dumps as json_dumps
 from sys import path
 from os.path import dirname, abspath, join
 
+# Logging
+from logging import basicConfig, info as log_info, error as log_error, warning as log_warning
+
 path.insert(0, join(dirname(abspath(__file__)), '..'))
 
 # Project modules
+from __init__ import DATABASE_FILE, LOG_LEVEL
+from util.log.logger import init_logger
+
 from validator.validator import Validator
 from util.database.database import Database
 
@@ -49,31 +55,39 @@ class Processor:
         # Temporary blocks for the next epoch
         self.next_epoch = []
 
+        # Logger
+        handler = init_logger()
+        basicConfig(level=LOG_LEVEL, handlers=[handler])
+
+        log_info('Processor initialized')
+
         if start:
             self.start()
 
     def run(self):
-        # 1. Synchronize with other nodes (via rpc server of these nodes)
+        # TODO -> Synchronize with other nodes (via rpc server of these nodes)
 
-        # 2. Set the validator up
+        # Set the validator up
         self.validator = Validator(self.private_key)
 
-        # 3. Check if enough VAC is staked to become a validator
+        # Check if enough VAC is staked to become a validator
         if Wallet.stake(self.validator.wallet.public_key, self.blockchain) < 4_096:
             # Dev log
-            print("Not enough VAC staked to become a validator")
+            log_error("Not enough VAC staked to become a validator")
 
             return False
 
-        # 4. Advertise to the network
+        # TODO -> Advertise to the network
 
-        # 5. Connect to other nodes
+        # TODO -> Connect to other nodes
 
-        # 6. Slide into validating process
+        # TODO -> Slide into validating process
 
-        # 7. Listen to new data and validate blocks
+        log_info('Validation process is running!')
+
+        # Listen to new data and validate blocks
         while not self.stop_event.is_set():
-            print('Creating new block...')
+            log_info('Creating new block...')
 
             # Fetch the transactions for this block
             if self.tx:
@@ -98,8 +112,7 @@ class Processor:
 
             # Check if the block is valid
             if not block.is_valid(self.blockchain):
-                # Dev log
-                print('Error occurred! Stopping program (Own block is invalid)')
+                log_error('Error occurred! Stopping program (Own block is invalid)')
 
                 # TODO -> Change behaviour when block is invalid
 
@@ -132,8 +145,7 @@ class Processor:
                             self.tx.append(item_queue['data'])
 
                         else:
-                            # Dev log
-                            print('Found an invalid transaction')
+                            log_warning('Found an invalid transaction!')
 
                     # Check if the item is a block
                     elif item_queue['type'] == 'temp_block':
@@ -214,12 +226,11 @@ class Processor:
             success = self.blockchain.add_block(winner_block)
 
             if not success:
-                # Dev log
-                print('Error occurred! Stopping program (add_block was not successful)')
+                log_error('Block could not be added to blockchain! Stopping program...')
 
                 return False
 
-            print('Added block successfully:', winner_block.index)
+            log_info(f'Added block {winner_block.index} successfully')
 
             # Reset temporary and winner blocks
             self.validator.temp_blocks = []
@@ -228,18 +239,16 @@ class Processor:
             # Every 10 blocks check if whole chain is valid
             if winner_block.index % 10 == 0:
                 if not self.blockchain.is_valid:
-                    # TODO -> Find the error and resync the chain with other nodes
+                    # TODO -> Find the error and resync the chain with the help of other nodes
 
-                    # Dev log
-                    print('Error occurred! Stopping program (Chain is invalid)')
+                    log_error('Blockchain is invalid! Stopping program...')
 
                     return False
 
                 else:
-                    # Dev log
-                    print('Chain is valid')
+                    log_info('Chain is valid')
 
-        # 8. Turn all processes off
+        # TODO -> Turn all processes off
 
     def start(self):
         """Starts the processor-thread.
@@ -247,6 +256,7 @@ class Processor:
         :return: Status if processor start was successful.
         :rtype: bool
         """
+        log_info('Starting processor...')
 
         # Check if database is already running
         if self.thread.is_alive():
@@ -293,8 +303,10 @@ class Processor:
         try:
             self.rpc_server.start()
 
+            log_info('RPC Server started!')
+
         except:
-            print('Could not start RPC server')
+            log_error('RPC Server failed to start!')
 
             return False
 
@@ -307,8 +319,12 @@ class Processor:
         self.node_server.start()
         self.node_client.start()
 
+        log_info('Node client and server started')
+
         # Start the database handler
         self.thread.start()
+
+        log_info('Processor started!')
 
         return True
 
@@ -318,6 +334,8 @@ class Processor:
         :return: Status if stop was successful.
         :rtype: bool
         """
+        log_info('Stopping processor...')
+
         # Check if database is not running
         if not self.thread.is_alive():
             return False
@@ -333,6 +351,8 @@ class Processor:
         self.rpc_server.stop()
         self.rpc_server = None
 
+        log_info('Processor stopped!')
+
         return True
 
     def restart(self):
@@ -341,6 +361,7 @@ class Processor:
         :return: Status if restart was successful.
         :rtype: bool
         """
+        log_info('Restarting processor...')
 
         # Check whether the thread is running or not
         if not self.thread.is_alive():

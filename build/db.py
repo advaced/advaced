@@ -1,13 +1,13 @@
 # Add to path
 from sys import path
+from os.path import dirname, abspath, join, exists
+from os import makedirs
 
-from os.path import join, exists
-from os import getcwd, mkdir, chmod
-
-path.insert(0, getcwd())
+path.insert(0, join(dirname(abspath(__file__)), '..'))
 
 # Database-handler
-from util.database.initialize import create_database, create_tables, DATABASE_FILE
+from util.database.initialize import create_database
+from __init__ import DATABASE_FILE
 
 
 def build():
@@ -17,20 +17,16 @@ def build():
     :rtype: bool
     """
 
-    # Check if the database does not exist
-    if exists(DATABASE_FILE):
-        create_database(False)
-
-        return True
-
     # Create the directory
-    try:
-        mkdir('/lib/advaced/database')
-        
-    except:
-        return False
+    if not exists(DATABASE_FILE):
+        try:
+            makedirs(dirname(abspath(DATABASE_FILE)))
+
+        except OSError as e:
+            raise e
+            return False
 
     # Create the database
-    create_database(True)
+    create_database(overwrite=False)
 
     return True

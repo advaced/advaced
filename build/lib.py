@@ -1,9 +1,16 @@
-# Modules for directory-copying
-from os import path, getcwd, rmdir
-from shutil import rmtree, copytree, Error
+from os import path, getcwd
+from shutil import rmtree, copytree, Error as SHUtilError
+from logging import basicConfig, info as log_info, error as log_error, warning as log_warning
 
-# Project version
-from __init__ import __version__
+# Add to path
+from sys import path as sys_path
+from os.path import dirname, abspath, join
+
+sys_path.insert(0, join(dirname(abspath(__file__)), '..'))
+
+# Project modules
+from __init__ import __version__, LOG_LEVEL
+from util.log.logger import init_logger
 
 
 def build() -> int:
@@ -16,45 +23,43 @@ def build() -> int:
     :raises: shutil.Error: Failed to copy project to program/library directory
 
     """
+    handler = init_logger()
+    basicConfig(level=LOG_LEVEL, handlers=[handler])
 
     # Check if build already exists
     if path.isdir(f'/lib/advaced/{__version__}'):
         # Logging for development
-        print('found another build')
+        log_info('Found another build')
+        log_info('Removing old build...')
 
         # Try to remove current build
         try:
-            # Logging for development
-            print('removing old build')
-
             rmtree(f'/lib/advaced/{__version__}')
 
-        except OSError as error:
-            # Logging for development
-            print('finished with error')
+            log_info('Removed old build')
 
-            # Raise the error
-            raise OSError
+        except OSError:
+            # Logging for development
+            log_error('Could not remove old build, it is may due to lack of permission')
+
+            return False
 
     # Set the paths for copying
     source = getcwd()
     destination = f'/lib/advaced/{__version__}'
 
     # Logging for development
-    print(f'copying to {destination}...')
+    log_info(f'Building into {destination}...')
 
     # Try to copy the source into destination
     try:
         copytree(source, destination)
 
-    except Error as error:
-        # Logging for development
-        print('finished with error')
+    except SHUtilError:
+        log_error('Could not build project')
 
-        # Raise the error
-        raise error
+        return False
 
-    # Logging for development
-    print('finished without error')
+    log_info('Finished building project')
 
     return True

@@ -1,11 +1,18 @@
-# File remover
-from os import path, remove, getcwd
+from os import path, remove
+from logging import basicConfig, info as log_info, error as log_error, warning as log_warning
 
-# Project version
-from __init__ import __version__
+# Add to path
+from sys import path as sys_path
+from os.path import dirname, abspath, join
+
+sys_path.insert(0, join(dirname(abspath(__file__)), '..'))
+
+# Project modules
+from __init__ import LOG_LEVEL
+from util.log.logger import init_logger
 
 
-def build() -> int:
+def build() -> bool:
     """Creates the command in the `/usr/bin` directory (only for linux)
 
     :returns: The state of success from the process
@@ -14,42 +21,26 @@ def build() -> int:
     :raises: OSError
     :raises: BaseException
     """
+    handler = init_logger()
+    basicConfig(level=LOG_LEVEL, handlers=[handler])
 
     # Check if file already exists
     if path.isfile('/bin/advaced'):
-        # Logging for development
-        print('found another file')
+        log_warning('Compiled command already exists!')
 
-        # Try to remove current start-file
+        # Ask for confirmation
+        if not input('Do you want to overwrite the existing Advaced command? [y/N] ').lower() == 'y':
+            return False
+
+        # Try to remove current file
         try:
-            # Logging for development
-            print('removing old file')
+            log_info('Removing old command...')
 
             remove('/bin/advaced')
 
-        except OSError as error:
-            # Logging for development
-            print('finished with error')
+        except OSError:
+            log_error('Failed to remove old command!')
 
-            # Raise the error
-            raise OSError
-
-    # Logging for development
-    print('creating bash file...')
-
-    try:
-        # Create bash file to run
-        with open('/bin/advaced', 'a') as shell_file:
-            shell_file.writelines(['#!/bin/sh\n', f'python3 "/lib/advaced/{__version__}/" $@'])
-
-    except OSError or BaseException as error:
-        # Logging for development
-        print('finished with error')
-
-        # Raise the error
-        raise error
-
-    # Logging for development
-    print('build finished')
+    log_info('[✔️] Ready to compile command')
 
     return True

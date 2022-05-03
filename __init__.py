@@ -1,6 +1,7 @@
 from platform import system
 from os.path import join
 from os import getcwd
+from logging import INFO, DEBUG, ERROR, WARNING, CRITICAL
 
 # Project version
 __version__ = '1.0.0'
@@ -11,12 +12,42 @@ OS = system()
 # Set the database path from used operating system
 if OS == 'Linux':
     DATABASE_FILE = join('/lib', 'advaced', 'database', 'db.db')
+    LOG_FILE = join('/lib', 'advaced', 'logs', 'advaced.log')
 
 elif OS == 'Windows':
     DATABASE_FILE = join(getcwd(), 'db.db')  # Path firstly used only for development
+    LOG_FILE = join(getcwd(), 'advaced.log')  # Path firstly used only for development
 
 elif OS == 'Darwin':
-    DATABASE_FILE = join('Library', 'advaced', 'database', 'db.db')
+    DATABASE_FILE = join('/Library', 'advaced', 'database', 'db.db')
+    LOG_FILE = join('/Library', 'advaced', 'logs', 'advaced.log')
+
+# Standard logging format
+FORMAT = '[{levelname:^9}] Advaced: {asctime} → {message}'
+FORMATS = {
+    INFO: FORMAT,
+    DEBUG: f'\33[36m{FORMAT}\33[0m',
+    ERROR: f'\33[31m{FORMAT}\33[0m',
+    WARNING: f'\33[33m{FORMAT}\33[0m',
+    CRITICAL: f'\33[1m\33[31m{FORMAT}\33[0m'
+}
+
+# Set the log level
+level = 'INFO'
+
+match level:
+    case 'INFO':
+        LOG_LEVEL = INFO
+    case 'DEBUG':
+        LOG_LEVEL = DEBUG
+    case 'ERROR':
+        LOG_LEVEL = ERROR
+    case 'WARNING':
+        LOG_LEVEL = WARNING
+    case 'CRITICAL':
+        LOG_LEVEL = CRITICAL
+    case _:
+        LOG_LEVEL = INFO
 
 # Socket server and client ports
 SERVER_PORT = 57575
@@ -29,9 +60,9 @@ RPC_PORT = 87878
 NAME = 'advaced - the advaced protocol command line interface'
 
 # Command line interface usage
-USAGE = 'advaced [OPTIONS] COMMAND [COMMAND-OPTIONS]'
+USAGE = 'advaced [OPTIONS] COMMAND [COMMAND-OPTION]'
 
-# Set options-dict up
+# Set options dict up
 OPTIONS = {
     # Which network to use
     'mainnet': {
@@ -238,35 +269,28 @@ COMMANDS = {
         'standard': 'transact',
         'max': 'transaction',
 
-        'description': 'Makes a transaction from one of the accounts'
+        'description': 'Makes a transaction'
     },
 
     'stake': {
         'standard': 'stake',
-        'max': 'stake-vac',
+        'max': 'delegate',
 
         'description': 'Stakes a given amount from one of the accounts to an address'
     },
 
     'unstake': {
         'standard': 'unstake',
-        'max': 'unstake-vac',
 
         'description': 'Unstake a given previous staked amount from a address back to one of the accounts'
     },
 
     'claim': {
         'standard': 'claim',
-        'max': 'claim-reward',
+        'max': 'earn-reward',
 
-        'description': 'Claims a reward from successful validation of a block/blocks (tx: validator-address -> claiming-address | sign: validator-address)'
-    },
-
-    'burn': {
-        'standard': 'burn',
-        'max': 'burn-stake',
-
-        'description': 'Manually burn stake from address, that signed and validated wrong block (normally an automatic process)'
+        'description': 'Claims a reward from successful validation of a block/blocks (tx: validator-address -> '
+                       'claiming-address | sign: validator-address) '
     },
 
     # Versioning

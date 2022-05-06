@@ -28,7 +28,6 @@ from blockchain.blockchain import Blockchain
 from blockchain.transaction import Transaction
 
 from accounts.account import Account
-from accounts.wallet import Wallet
 from util.database.database import Database
 
 
@@ -185,6 +184,9 @@ def handle_input():
                 raise InvalidCommand(argument)
 
     # Check which action the protocol should handle
+    if cmd_opt == 'help':
+        print_cmd_help(cmd)
+
     if cmd == 'account':
         if cmd_opt == 'create':
             print('Please provide the following information')
@@ -613,7 +615,7 @@ def handle_input():
         pass
 
     elif cmd == 'help':
-        print_help(opt, opt_values)
+        print_help()
 
 
 def is_option(value):

@@ -68,17 +68,17 @@ OPTIONS = {
     'mainnet': {
         'min': '-mn',
         'standard': '--mainnet',
-        'max': '--mainnetwork',
+        'max': '--main-network',
 
         'value': False,
 
-        'description': 'Use the Advaced main-network'
+        'description': 'Use the Advaced main-network (set as default)'
     },
 
     'testnet': {
         'min': '-tn',
         'standard': '--testnet',
-        'max': '--testnetwork',
+        'max': '--test-network',
 
         'value': False,
 
@@ -135,7 +135,7 @@ COMMANDS = {
 
                 'value': True,
                 'value-name': 'save-directory',
-                'value-required': True,
+                'value-required': False,
 
                 'description': 'Exports an account into a file'
             },
@@ -144,9 +144,7 @@ COMMANDS = {
                 'min': 'imp',
                 'standard': 'import',
 
-                'value': True,
-                'value-name': 'private-key',
-                'value-required': True,
+                'value': False,
 
                 'description': 'Imports an account from its private key'
             },
@@ -157,6 +155,15 @@ COMMANDS = {
                 'value': False,
 
                 'description': 'Lists all accounts, that are currently saved'
+            },
+
+            'help': {
+                'min': 'h',
+                'standard': 'help',
+
+                'value': False,
+
+                'description': 'Shows this help'
             }
         },
 
@@ -192,8 +199,18 @@ COMMANDS = {
                 'value': False,
 
                 'description': 'Share data of the blockchain as rpc server'
+            },
+
+            'help': {
+                'min': 'h',
+                'standard': 'help',
+
+                'value': False,
+
+                'description': 'Shows this help'
             }
         },
+
 
         'description': 'Execute a process'
     },
@@ -225,6 +242,15 @@ COMMANDS = {
                 'value-required': True,
 
                 'description': 'Export blockchain to sqlite3-file'
+            },
+
+            'help': {
+                'min': 'h',
+                'standard': 'help',
+
+                'value': False,
+
+                'description': 'Shows this help'
             }
         },
 
@@ -257,6 +283,15 @@ COMMANDS = {
                 'value-required': True,
 
                 'description': 'Imports blockchain from sqlite3-file'
+            },
+
+            'help': {
+                'min': 'h',
+                'standard': 'help',
+
+                'value': False,
+
+                'description': 'Shows this help'
             }
         },
 

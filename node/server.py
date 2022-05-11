@@ -40,8 +40,12 @@ class Server:
         self.client = client
 
         # Set host and port
-        self.host = host if host else get('https://api.ipify.org').content.decode('utf-8')
-        self.port = port if port else 57575  # Standard advaced tcp port: 57575
+        try:
+            self.host = host if host else get('https://api.ipify.org').content.decode('utf-8')
+        except:
+            pass
+
+        self.port = 57575  # Standard advaced tcp port
 
         # Set socket up
         context = Context()

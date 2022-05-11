@@ -79,9 +79,14 @@ class Client:
 
             return False
 
+        try:
+            own_ip = get('https://api.ipify.org').content.decode('utf-8')
+        except:
+            own_ip = 'localhost'
+
         # Connect to all known nodes
         for node in known_nodes:
-            if node[0] in ('localhost', '127.0.0.1', get('https://api.ipify.org').content.decode('utf8')):
+            if node[0] in ('localhost', '127.0.0.1', own_ip):
                 continue
 
             try:

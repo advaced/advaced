@@ -17,7 +17,7 @@ path.insert(0, join(dirname(abspath(__file__)), '..'))
 # Project modules
 from __init__ import OPTIONS, COMMANDS
 
-from .help import print_help
+from .help import print_help, print_cmd_help
 
 from validator.processor import Processor
 from rpc.server import RPCServer
@@ -72,7 +72,7 @@ def handle_input():
 
                 # Check if argument is this option
                 if (argument == (option['min'] if 'min' in option else None) or
-                    argument == (option['standard'] if 'standard' in option else None) or
+                   argument == (option['standard'] if 'standard' in option else None) or
                    argument == (option['max'] if 'max' in option else None)):
                     opt.append(name)
 
@@ -123,7 +123,7 @@ def handle_input():
 
                 # Check if argument is this command
                 if (argument == (command['min'] if 'min' in command else None) or
-                    argument == (command['standard'] if 'standard' in command else None) or
+                   argument == (command['standard'] if 'standard' in command else None) or
                    argument == (command['max'] if 'max' in command else None)):
                     cmd = name
                     found = True
@@ -133,26 +133,32 @@ def handle_input():
             if found:
                 continue
 
+        elif argument == 'help' or argument == 'h' and not cmd_opt and cmd:
+            cmd_opt = 'help'
+
+            if len(argv) <= pos + 1:
+                break
+
         # Check if command has options and option was not already fetched
         elif 'cmd-opts' in COMMANDS[cmd] and not cmd_opt:
             for name, cmd_option in COMMANDS[cmd]['cmd-opts'].items():
 
                 # Check if argument is this command-option
                 if (argument == (cmd_option['min'] if 'min' in cmd_option else None) or
-                    argument == (cmd_option['standard'] if 'standard' in cmd_option else None) or
+                   argument == (cmd_option['standard'] if 'standard' in cmd_option else None) or
                    argument == (cmd_option['max'] if 'max' in cmd_option else None)):
                     cmd_opt = name
                     found = True
 
                     # Check if a value could be provided
-                    if (cmd_option['value'] is True and (cmd_option['value-required']
-                       if 'value-required' in cmd_option else False) is False):
+                    if (cmd_option['value'] is True and 'value-required' in cmd_option and
+                       cmd_option['value-required'] is False):
                         if len(argv) <= pos + 1:
                             return False
 
                         # Check if it is not a value
                         if (not is_option(argv[pos + 1]) and not is_command(argv[pos + 1]) and
-                           not is_command_option(argv[pos + 1])):
+                            not is_command_option(argv[pos + 1])):
                             if len(argv) <= pos + 1:
                                 break
 
@@ -186,6 +192,8 @@ def handle_input():
     # Check which action the protocol should handle
     if cmd_opt == 'help':
         print_cmd_help(cmd)
+
+        return True
 
     if cmd == 'account':
         if cmd_opt == 'create':
@@ -362,13 +370,7 @@ def handle_input():
             # Initialize the processor and start it
             processor = Processor(private_key=account.private_key, genesis_validation=('genesis' in opt))
 
-            # try:
             processor.start()
-            # except Exception as e:
-            #     processor.stop()
-            #
-            #     # Debug
-            #     raise e
 
             # Dev log
             print('Processor is running...')
@@ -420,47 +422,18 @@ def handle_input():
 
     elif cmd == 'transaction':
         while True:
-            # Check if the account or the private key should be used
-            if input('Use account that exists on this device? (y/n): ').lower() == 'y':
-                account_name = input('Account name: ')
-                account_password = getpass(prompt=f'Password for {account_name}: ')
+            account = fetch_account()
 
-                print('Loading account...')
-
-                # Set account up
-                account = Account(account_name, account_password)
-                success = account.load()
-
-                if not success:
-                    print('Failed to load account')
-
-                    return False
-
-                print('Account loaded successfully\n')
-
-            else:
-                print('Use private key instead')
-
-                private_key = input('Private key: ')
-
-                print('Loading account...')
-
-                account = Account('', '', private_key=private_key)
-                account.public_key = account.get_public_key(private_key)
-
-                if not account.public_key:
-                    print('Failed to load account')
-
-                    return False
-
-                print('Account loaded successfully\n')
+            # Check if the load was successful
+            if not account:
+                return False
 
             # Ask who to send the transaction to and how much
             recipient = input('Recipient (public key): ')
             amount = input('Amount: ')
 
             try:
-                amount = int(amount)
+                float(amount)
 
             except:
                 print('Invalid amount')
@@ -472,7 +445,7 @@ def handle_input():
             # Ask if user wants to add a tip to the transaction
             if input('Add tip? (y/n): ').lower() == 'y':
                 try:
-                    tip = int(input('Please enter the tip: '))
+                    tip = float(input('Please enter the tip: '))
 
                 except:
                     print('Invalid tip')
@@ -521,7 +494,7 @@ def handle_input():
                 transaction_fee = input('Please enter the transaction fee: ')
 
                 try:
-                    transaction_fee = int(transaction_fee)
+                    float(transaction_fee)
 
                 except:
                     print('Invalid transaction fee')
@@ -531,8 +504,8 @@ def handle_input():
             print('Creating transaction...')
 
             # Create transaction
-            transaction = Transaction(account.public_key, recipient, amount, fee=transaction_fee + (tip if tip else 0),
-                                      tx_type='tx')
+            transaction = Transaction(account.public_key, recipient, amount, fee=transaction_fee,
+                                      tx_type='tx', tip=(tip if tip else 0))
 
             # Sign transaction
             success = transaction.sign_tx(account.private_key)
@@ -569,11 +542,10 @@ def handle_input():
                                                                type='tx', timestamp=str(transaction.timestamp),
                                                                hash=transaction.hash, signature=transaction.signature))
 
-            except Exception as e:
+            except:
                 # TODO -> Send to another node
 
                 print('Failed to send transaction')
-                print(e)
 
                 return False
 
@@ -591,8 +563,121 @@ def handle_input():
             break
 
     elif cmd == 'stake':
-        # TODO -> Create a stake transaction (ask for tx values)
-        pass
+        while True:
+            account = fetch_account()
+
+            # Check if the load was successful
+            if not account:
+                return False
+
+            # Ask who to delegate the stake to and how much
+            recipient = input('Delegate to (public key of the recipient; default: own address): ')
+            amount = input('Amount to stake: ')
+
+            try:
+                float(amount)
+
+            except:
+                print('Invalid amount')
+
+                return False
+
+            tip = None
+
+            # Ask if user wants to add a tip to the transaction
+            if input('Add tip for the validators? (y/n): ').lower() == 'y':
+                try:
+                    tip = float(input('Please enter the tip: '))
+
+                except:
+                    print('Invalid tip')
+
+                    return False
+
+            print('\nFetching required data...')
+
+            # Fetch the node to use
+            node = fetch_node()
+
+            # TODO -> Send it to multiple nodes
+
+            # Fetch current transaction fee
+            client = Client(node[0], node[1])
+            transaction_fee = (client.getBaseFee() * 1.03125) / 2
+
+            # Check if the user wants to use a custom fee
+            print('The current transaction fee is VAC ' + str(transaction_fee))
+            if input('Use custom fee (Fee too low = transaction will not be included)? (y/n): ').lower() == 'y':
+                transaction_fee = input('Please enter the transaction fee: ')
+
+                try:
+                    transaction_fee = float(transaction_fee)
+
+                except:
+                    print('Invalid transaction fee')
+
+                    return False
+
+            print('Creating stake transaction...')
+
+            # Create transaction
+            transaction = Transaction(account.public_key, recipient, amount, fee=transaction_fee,
+                                      tx_type='stake', tip=(tip if tip else 0))
+
+            # Sign transaction
+            success = transaction.sign_tx(account.private_key)
+
+            if not success:
+                print('Failed to sign transaction')
+
+                return False
+
+            print('Stake transaction created successfully\n')
+
+            print('Stake transaction information')
+            print('Sender: ' + transaction.sender)
+            print('Recipient: ' + transaction.recipient)
+            print('Amount: ' + str(transaction.amount))
+            print('Fee: ' + str(transaction.fee))
+            print('Timestamp: ' + str(transaction.timestamp))
+            print('Hash: ' + transaction.hash)
+            print('Signature: ' + transaction.signature)
+
+            # Ask if the user wants to send the transaction
+            if not input('\nSend stake transaction? (y/n): ').lower() == 'y':
+                print('Stake transaction aborted')
+
+                return False
+
+            # Send transaction
+            print('Sending stake transaction...')
+
+            try:
+                success = client.addTransaction(RPCTransaction(sender=transaction.sender,
+                                                               recipient=transaction.recipient,
+                                                               amount=transaction.amount, fee=transaction.fee,
+                                                               type='tx', timestamp=str(transaction.timestamp),
+                                                               hash=transaction.hash, signature=transaction.signature))
+
+            except:
+                # TODO -> Send to another node
+
+                print('Failed to send transaction')
+
+                return False
+
+            if not success:
+                print('Failed to send transaction :(')
+
+                return False
+
+            print('Transaction sent successfully\n')
+
+            # Ask if the user wants to send another transaction
+            if input('Send another transaction? (y/n): ').lower() == 'y':
+                continue
+
+            break
 
     elif cmd == 'unstake':
         # TODO -> Create an unstake transaction (ask for tx values)
@@ -600,10 +685,6 @@ def handle_input():
 
     elif cmd == 'claim':
         # TODO -> Create a claim transaction (ask for tx values)
-        pass
-
-    elif cmd == 'burn':
-        # TODO -> Create a burn transaction (ask for tx values)
         pass
 
     elif cmd == 'version':
@@ -637,7 +718,7 @@ def is_option(value):
 
 
 def is_command(value):
-    """Check if value is an option.
+    """Check if value is a command.
 
     :param value: The value to check.
     :type value: str
@@ -655,7 +736,7 @@ def is_command(value):
 
 
 def is_command_option(value, command_name=None):
-    """Check if value is an option.
+    """Check if value is a command option.
 
     :param value: The value to check.
     :type value: str
@@ -674,8 +755,8 @@ def is_command_option(value, command_name=None):
 
                 # Check if the option is equal to the given value
                 if (value == (cmd_option['min'] if 'min' in cmd_option else None) or
-                    value == (cmd_option['standard'] if 'standard' in cmd_option else None) or
-                    value == (cmd_option['max'] if 'max' in cmd_option else None)):
+                   value == (cmd_option['standard'] if 'standard' in cmd_option else None) or
+                   value == (cmd_option['max'] if 'max' in cmd_option else None)):
                     return True
 
         else:
@@ -698,3 +779,85 @@ def is_command_option(value, command_name=None):
                         return True
 
     return False
+
+
+def fetch_account() -> Account | bool:
+    """Fetch account from user input.
+
+    :return: An account if it was successful and False if it was unsuccessful
+    :rtype: :py:class:`accounts.account.Account` | bool
+    """
+    # Check if the account or the private key should be used
+    if input('Use account that exists on this device? (y/n): ').lower() == 'y':
+        account_name = input('Account name: ')
+        account_password = getpass(prompt=f'Password for {account_name}: ')
+
+        print('Loading account...')
+
+        # Set account up
+        account = Account(account_name, account_password)
+        success = account.load()
+
+        if not success:
+            print('Failed to load account')
+
+            return False
+
+        print('Account loaded successfully\n')
+
+    else:
+        print('Use private key instead')
+
+        private_key = input('Private key: ')
+
+        print('Loading account...')
+
+        account = Account('', '', private_key=private_key)
+        account.public_key = account.get_public_key(private_key)
+
+        if not account.public_key:
+            print('Failed to load account')
+
+            return False
+
+        print('Account loaded successfully\n')
+
+    return account
+
+
+def fetch_node() -> list:
+    """Fetches a node the user wants to use.
+
+    :return: Node to use
+    :rtype: list
+    """
+
+    # Fetch a known node
+    nodes = Database.fetchall_from_db('SELECT ip_address, port FROM nodes_archive', {})
+
+    while True:
+        if not nodes:
+            # TODO -> Search for nodes
+
+            print('No nodes found')
+
+            # Check if the user wants to use the advaced-org node
+            if input('Use the advaced foundation node instead? (y/n): ').lower() == 'y':
+                nodes = [('localhost', 87878)]
+
+                # TODO -> Change ip address to advaced-org ip address
+
+                # Save the node to the database
+                Database.push_to_db('INSERT INTO nodes_archive (ip_address, port) VALUES (:ip, :port)',
+                                    {'ip': nodes[0][0], 'port': nodes[0][1]})
+
+        if type(nodes) == list:
+            # Select a random node
+            node = choice(nodes)
+
+        else:
+            node = nodes
+
+        # Ask if the user wants to use the node
+        if input(f'Use node {node[0]}:{node[1]}? (y/n): ').lower() == 'y':
+            return node

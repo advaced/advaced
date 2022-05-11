@@ -57,7 +57,7 @@ CLIENT_PORT = 67676
 RPC_PORT = 87878
 
 # Name of the interface
-NAME = 'advaced - the advaced protocol command line interface'
+NAME = 'advaced - the Advaced protocol command line interface'
 
 # Command line interface usage
 USAGE = 'advaced [OPTIONS] COMMAND [COMMAND-OPTION]'
@@ -96,7 +96,7 @@ OPTIONS = {
         # full: everything | light: last 1_000 blocks
         'values': ['full', 'light'],
 
-        'description': 'Set synchronization mode ("full" or "light") (default: full)'
+        'description': 'Set synchronization mode ("full" or "light"; default: full)'
     },
 
     # Whether it is a genesis validation or not
@@ -107,7 +107,7 @@ OPTIONS = {
 
         'value': False,
 
-        'description': 'Create a new blockchain instead of working on an existing one'
+        'description': 'Create a new blockchain'
     },
 }
 
@@ -311,21 +311,20 @@ COMMANDS = {
         'standard': 'stake',
         'max': 'delegate',
 
-        'description': 'Stakes a given amount from one of the accounts to an address'
+        'description': 'Stakes a given amount to an address'
     },
 
     'unstake': {
         'standard': 'unstake',
 
-        'description': 'Unstake a given previous staked amount from a address back to one of the accounts'
+        'description': 'Unstake a given previous delegated amount'
     },
 
     'claim': {
         'standard': 'claim',
         'max': 'earn-reward',
 
-        'description': 'Claims a reward from successful validation of a block/blocks (tx: validator-address -> '
-                       'claiming-address | sign: validator-address) '
+        'description': 'Claims a reward from successful validation'
     },
 
     # Versioning
@@ -333,14 +332,14 @@ COMMANDS = {
         'min': 'v',
         'standard': 'version',
 
-        'description': 'Show current version'
+        'description': 'Shows the current version'
     },
 
     'version-audit': {
         'min': 'v-audit',
         'standard': 'version-audit',
 
-        'description': 'Checks used version for security vulnerabilities and bugs (online)'
+        'description': 'Checks used version for vulnerabilities'
     },
 
     # Help
@@ -348,6 +347,6 @@ COMMANDS = {
         'min': 'h',
         'standard': 'help',
 
-        'description': 'Shows help for all commands or for only for a specific command'
+        'description': 'Shows this page'
     }
 }

@@ -13,7 +13,7 @@ from accounts import Wallet
 
 
 class Transaction:
-    def __init__(self, sender, recipient, amount, fee=0, tx_type='tx', tip=0):
+    def __init__(self, sender, recipient, amount: float, fee: float = 0, tx_type='tx', tip: float = 0):
         """Set the transaction-values up.
 
         :param sender: The public-key of the sender.
@@ -21,13 +21,13 @@ class Transaction:
         :param recipient: The public-key of the recipient.
         :type recipient: str (hex-digest)
         :param amount: The amount of coins that the sender transacts.
-        :type amount: int
+        :type amount: float
         :param fee: The transaction-fee, that is added to the incentive for the validators.
-        :type fee: int
+        :type fee: float
         :param type: tx (transaction), stake (staking event), claim (claiming event), burn (expropriation event)
         :type type: str
         :param tip: Tip for the validators (if the transactor wants to donate some money to get prioritized).
-        :type tip: int
+        :type tip: float
         """
 
         self.sender = sender

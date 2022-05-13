@@ -22,8 +22,7 @@ def build():
         try:
             makedirs(dirname(abspath(DATABASE_FILE)))
 
-        except OSError as e:
-            raise e
+        except OSError:
             return False
 
     # Create the database

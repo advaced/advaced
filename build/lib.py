@@ -9,7 +9,7 @@ from os.path import dirname, abspath, join
 sys_path.insert(0, join(dirname(abspath(__file__)), '..'))
 
 # Project modules
-from __init__ import __version__, LOG_LEVEL
+from __init__ import SOURCE_PATH, LOG_LEVEL
 from util.log.logger import init_logger
 
 
@@ -27,33 +27,29 @@ def build() -> int:
     basicConfig(level=LOG_LEVEL, handlers=[handler])
 
     # Check if build already exists
-    if path.isdir(f'/lib/advaced/{__version__}'):
-        # Logging for development
+    if path.isdir(SOURCE_PATH):
         log_info('Found another build')
         log_info('Removing old build...')
 
         # Try to remove current build
         try:
-            rmtree(f'/lib/advaced/{__version__}')
+            rmtree(SOURCE_PATH)
 
             log_info('Removed old build')
 
         except OSError:
-            # Logging for development
             log_error('Could not remove old build, it is may due to lack of permission')
 
             return False
 
-    # Set the paths for copying
+    # Set the path to copy from
     source = getcwd()
-    destination = f'/lib/advaced/{__version__}'
 
-    # Logging for development
-    log_info(f'Building into {destination}...')
+    log_info(f'Building into {SOURCE_PATH}...')
 
     # Try to copy the source into destination
     try:
-        copytree(source, destination)
+        copytree(source, SOURCE_PATH)
 
     except SHUtilError:
         log_error('Could not build project')

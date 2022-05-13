@@ -11,16 +11,28 @@ OS = system()
 
 # Set the database path from used operating system
 if OS == 'Linux':
-    DATABASE_FILE = join('/lib', 'advaced', 'database', 'db.db')
-    LOG_FILE = join('/lib', 'advaced', 'logs', 'advaced.log')
+    LIBRARY_PATH = join('/lib', 'advaced')
+    COMMAND_FILE = join('/bin', 'advaced')
+
+    SOURCE_PATH = join(LIBRARY_PATH, __version__)
+    DATABASE_FILE = join(LIBRARY_PATH, 'database', 'db.db')
+    LOG_FILE = join(LIBRARY_PATH, 'logs', 'advaced.log')
 
 elif OS == 'Windows':
-    DATABASE_FILE = join(getcwd(), 'db.db')  # Path firstly used only for development
-    LOG_FILE = join(getcwd(), 'advaced.log')  # Path firstly used only for development
+    LIBRARY_PATH = join(getcwd())  # Path firstly used only for development
+    COMMAND_FILE = join(LIBRARY_PATH, 'command', 'advaced')
+
+    SOURCE_PATH = join(LIBRARY_PATH, __version__)
+    DATABASE_FILE = join(LIBRARY_PATH, 'db.db')
+    LOG_FILE = join(LIBRARY_PATH, 'advaced.log')
 
 elif OS == 'Darwin':
-    DATABASE_FILE = join('/Library', 'advaced', 'database', 'db.db')
-    LOG_FILE = join('/Library', 'advaced', 'logs', 'advaced.log')
+    LIBRARY_PATH = join('/Library', 'advaced')
+    COMMAND_FILE = join('/usr', 'bin', 'advaced')
+
+    SOURCE_PATH = join(LIBRARY_PATH, __version__)
+    DATABASE_FILE = join(LIBRARY_PATH, 'database', 'db.db')
+    LOG_FILE = join(LIBRARY_PATH, 'logs', 'advaced.log')
 
 # Standard logging format
 FORMAT = '[{levelname:^9}] Advaced: {asctime} → {message}'

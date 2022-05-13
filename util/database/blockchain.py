@@ -282,7 +282,7 @@ def fetch_transaction_block_index(tx: Transaction):
     return index
 
 
-def fetch_transactions(public_key: str, tx_type: str = None, is_sender: bool = None):
+def fetch_transactions(public_key: str, tx_type: str = None, is_sender: bool = None, max_block_index: int = None):
     """Fetch all transactions the account made in the past.
 
     :param public_key: Verifying key of the account.
@@ -291,55 +291,125 @@ def fetch_transactions(public_key: str, tx_type: str = None, is_sender: bool = N
     :type tx_type: str
     :param is_sender: If the account is the sender, the recipient or both.
     :type is_sender: bool | NoneType
+    :param max_block_index: The maximal index of the block to fetch transactions from.
+    :type max_block_index: int | NoneType
 
     :return: List of transactions the account made or received.
     :rtype: [ Transaction ]
     """
 
-    # Check if the type of the transaction is provided and no other specifications
-    if tx_type and is_sender == None:
-        # Fetch the transactions
-        transactions_data = Database.fetchall_from_db('SELECT sender, recipient, amount, fee, type, timestamp, hash, \
-                                                       signature FROM transactions WHERE type = :type AND \
-                                                       (sender = :public_key OR recipient = :public_key)',
-                                                      {'type': tx_type, 'public_key': public_key})
+    # Check if the maximal block index is set
+    if not max_block_index:
+        # Check if the type of the transaction is provided and no other specifications
+        if tx_type and is_sender is None:
+            # Fetch the transactions
+            transactions_data = Database.fetchall_from_db('SELECT sender, recipient, amount, fee, type, timestamp, '
+                                                          'hash, signature FROM transactions WHERE type = :type AND '
+                                                          '(sender = :public_key OR recipient = :public_key)',
+                                                          {'type': tx_type, 'public_key': public_key})
 
-    # Check if the type of the transaction is provided and the account should be the sender
-    elif tx_type and is_sender == True:
-        # Fetch the transactions
-        transactions_data = Database.fetchall_from_db('SELECT sender, recipient, amount, fee, type, timestamp, hash, \
-                                                       signature FROM transactions WHERE type = :type AND \
-                                                       sender = :public_key',
-                                                      {'type': tx_type, 'public_key': public_key})
+        # Check if the type of the transaction is provided and the account should be the sender
+        elif tx_type and is_sender is True:
+            # Fetch the transactions
+            transactions_data = Database.fetchall_from_db('SELECT sender, recipient, amount, fee, type, timestamp, '
+                                                          'hash, signature FROM transactions WHERE type = :type AND '
+                                                          'sender = :public_key',
+                                                          {'type': tx_type, 'public_key': public_key})
 
-    # Check if the type of the transaction is provided and the account should be the sender
-    elif tx_type and is_sender == False:
-        # Fetch the transactions
-        transactions_data = Database.fetchall_from_db('SELECT sender, recipient, amount, fee, type, timestamp, hash, \
-                                                       signature FROM transactions WHERE type = :type AND \
-                                                       recipient = :public_key',
-                                                      {'type': tx_type, 'public_key': public_key})
+        # Check if the type of the transaction is provided and the account should be the sender
+        elif tx_type and is_sender is False:
+            # Fetch the transactions
+            transactions_data = Database.fetchall_from_db('SELECT sender, recipient, amount, fee, type, timestamp, '
+                                                          'hash, signature FROM transactions WHERE type = :type AND '
+                                                          'recipient = :public_key',
+                                                          {'type': tx_type, 'public_key': public_key})
 
-    # Check if only the transactions should be fetched were the account is the sender
-    elif is_sender == True:
-        # Fetch the transactions
-        transactions_data = Database.fetchall_from_db('SELECT sender, recipient, amount, fee, type, timestamp, hash, \
-                                                       signature FROM transactions WHERE sender = :public_key',
-                                                      {'public_key': public_key})
+        # Check if only the transactions should be fetched were the account is the sender
+        elif is_sender is True:
+            # Fetch the transactions
+            transactions_data = Database.fetchall_from_db('SELECT sender, recipient, amount, fee, type, timestamp, '
+                                                          'hash, signature FROM transactions '
+                                                          'WHERE sender = :public_key',
+                                                          {'public_key': public_key})
 
-    # Check if only the transactions should be fetched were the account is the recipient
-    elif is_sender == True:
-        # Fetch the transactions
-        transactions_data = Database.fetchall_from_db('SELECT sender, recipient, amount, fee, type, timestamp, hash, \
-                                                       signature FROM transactions WHERE recipient = :public_key',
-                                                      {'public_key': public_key})
+        # Check if only the transactions should be fetched were the account is the recipient
+        elif is_sender is True:
+            # Fetch the transactions
+            transactions_data = Database.fetchall_from_db('SELECT sender, recipient, amount, fee, type, timestamp, '
+                                                          'hash, signature FROM transactions '
+                                                          'WHERE recipient = :public_key',
+                                                          {'public_key': public_key})
 
-    # Fetch all transactions where this account is involved
+        # Fetch all transactions where this account is involved
+        else:
+            transactions_data = Database.fetchall_from_db('SELECT sender, recipient, amount, fee, type, timestamp, '
+                                                          'hash, signature FROM transactions WHERE '
+                                                          'sender = :public_key OR recipient = :public_key',
+                                                          {'type': tx_type, 'public_key': public_key})
+
     else:
-        transactions_data = Database.fetchall_from_db('SELECT sender, recipient, amount, fee, type, timestamp, hash, \
-                                                       signature FROM transactions WHERE sender = :public_key OR \
-                                                       recipient = :public_key',
-                                                      {'type': tx_type, 'public_key': public_key})
+        # Check if the type of the transaction is provided and no other specifications
+        if tx_type and is_sender is None:
+            # Fetch the transactions
+            transactions_data = Database.fetchall_from_db('SELECT sender, recipient, amount, fee, type, timestamp, '
+                                                          'hash, signature FROM transactions WHERE type = :type AND '
+                                                          'block_index <= :max_index AND (sender = :public_key OR '
+                                                          'recipient = :public_key)',
+                                                          {
+                                                              'type': tx_type,
+                                                              'public_key': public_key,
+                                                              'max_index': max_block_index
+                                                           })
+
+        # Check if the type of the transaction is provided and the account should be the sender
+        elif tx_type and is_sender is True:
+            # Fetch the transactions
+            transactions_data = Database.fetchall_from_db('SELECT sender, recipient, amount, fee, type, timestamp, '
+                                                          'hash, signature FROM transactions WHERE type = :type AND '
+                                                          'block_index <= :max_index AND sender = :public_key',
+                                                          {
+                                                              'type': tx_type,
+                                                              'public_key': public_key,
+                                                              'max_index': max_block_index
+                                                          })
+
+        # Check if the type of the transaction is provided and the account should be the sender
+        elif tx_type and is_sender is False:
+            # Fetch the transactions
+            transactions_data = Database.fetchall_from_db('SELECT sender, recipient, amount, fee, type, timestamp, '
+                                                          'hash, signature FROM transactions WHERE type = :type AND '
+                                                          'recipient = :public_key AND block_index <= :max_index',
+                                                          {
+                                                              'type': tx_type,
+                                                              'public_key': public_key,
+                                                              'max_index': max_block_index
+                                                          })
+
+        # Check if only the transactions should be fetched were the account is the sender
+        elif is_sender is True:
+            # Fetch the transactions
+            transactions_data = Database.fetchall_from_db('SELECT sender, recipient, amount, fee, type, timestamp, '
+                                                          'hash, signature FROM transactions WHERE sender = :public_key'
+                                                          ' AND block_index <= :max_index',
+                                                          {'public_key': public_key, 'max_index': max_block_index})
+
+        # Check if only the transactions should be fetched were the account is the recipient
+        elif is_sender is True:
+            # Fetch the transactions
+            transactions_data = Database.fetchall_from_db('SELECT sender, recipient, amount, fee, type, timestamp, '
+                                                          'hash, signature FROM transactions WHERE '
+                                                          'recipient = :public_key AND block_index <= :max_index',
+                                                          {'public_key': public_key, 'max_index': max_block_index})
+
+        # Fetch all transactions where this account is involved
+        else:
+            transactions_data = Database.fetchall_from_db('SELECT sender, recipient, amount, fee, type, timestamp, '
+                                                          'hash, signature FROM transactions WHERE sender = :public_key'
+                                                          ' AND block_index <= :max_index OR recipient = :public_key',
+                                                          {
+                                                              'type': tx_type, 'public_key': public_key,
+                                                              'max_index': max_block_index
+                                                          })
 
     # Check if no transactions were found
     if not transactions_data:

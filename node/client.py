@@ -129,12 +129,10 @@ class Client:
         print('Disconnecting from nodes')
 
         # Disconnect from all nodes
-        for node in self.connected_nodes:
-            try:
-                self.socket.disconnect(f'tcp://{node[0]}:{node[1]}')
-            except:
-                # Dev log
-                print(f'Failed to disconnect from node {node[0]}:{node[1]}')
+        try:
+            iter(self.socket.disconnect(f'tcp://{node[0]}:{node[1]}') for node in self.connected_nodes)
+        except:
+            pass
 
     def start(self):
         """Starts the node server thread.

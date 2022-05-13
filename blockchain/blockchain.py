@@ -1,20 +1,22 @@
+from logging import basicConfig, info as log_info, error as log_error, warning as log_warning
+
 # Add to path
 from sys import path
 import os
 
 path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-# Project version
-from __init__ import __version__
-
-# Blockchain-classes
+# Project modules
+from __init__ import __version__, LOG_LEVEL
 from blockchain.transaction import Transaction
 from blockchain.block import Block
-
-# Database-handler
 from util.database.blockchain import (add_block, fetch_block, fetch_transaction_block_index, fetch_transactions,
                                       fetch_version_stamps, add_version_stamp)
 from util.database.cache import load_cache
+from util.log.logger import init_logger
+
+handler = init_logger()
+basicConfig(level=LOG_LEVEL, handlers=[handler])
 
 
 class Blockchain:
@@ -42,7 +44,8 @@ class Blockchain:
 
     @property
     def is_valid(self) -> bool:
-        """Check whether the blockchain is valid or not (Pretty important to make sure, that the block a node shares is valid).
+        """Check whether the blockchain is valid or not (Pretty important to make sure, that the block a node shares is
+           valid).
 
         :return: Status of the chain-validity
         :rtype: bool
@@ -69,17 +72,14 @@ class Blockchain:
                 if block_data['index'] == 1:
                     continue
 
-                # Initialize block from the data
+                # Initialize block from the data and check if it was successful
                 block = Block()
-                success = block.from_dict(block_data)
 
-                # Check if the block recreation was successful
-                if not success:
+                if not block.from_dict(block_data):
                     return False
 
                 # Check if the block and its transactions are valid
                 if not block.is_valid(self, in_chain=True):
-                    print('no valid')
                     block.to_dict()
                     return False
 
@@ -95,9 +95,8 @@ class Blockchain:
         """
 
         # Go through blocks and check their validity
-        for block in reversed(self.last_blocks):
-            if not block.is_valid(self, in_chain=True):
-                return False
+        if not all([block.is_valid(self, in_chain=True) for block in reversed(self.last_blocks)]):
+            return False
 
         return True
 
@@ -114,8 +113,10 @@ class Blockchain:
 
         return Block(tx_data if tx_data else [],
                      # Not a real public-key and no real signature
-                     validator='00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
-                     signature='00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000')
+                     validator='000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'
+                               '00000000000000000000000000000000000000000',
+                     signature='000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'
+                               '00000000000000000000000000000000000000000')
 
     def load_last_blocks(self):
         """Loads the cache (last 100 blocks) from the database.
@@ -131,8 +132,8 @@ class Blockchain:
         if not new_cache:
             return False
 
-        # Currently there is nothing to cache
-        if new_cache == True:
+        # Currently, there is nothing to cache
+        if new_cache is True:
             self.last_blocks = []
 
             return True
@@ -156,8 +157,8 @@ class Blockchain:
 
         # Check if block contains all necessary values
         if (not self.last_blocks[0].hash == block.previous_hash or self.last_blocks[0].timestamp > block.timestamp or
-            not self.last_blocks[0].index == block.index - 1 or not block.version == self.version or
-            not block.validator or not block.signature):
+           not self.last_blocks[0].index == block.index - 1 or not block.version == self.version or
+           not block.validator or not block.signature):
             # Return with no success
             return False
 
@@ -169,31 +170,26 @@ class Blockchain:
         if not genesis:
             self.last_blocks.insert(0, block)
 
-        # Push block to database
-        success = add_block(block.to_dict())
+        # Push block to database and check if it was successful
+        if not add_block(block.to_dict()):
+            # TODO -> Check why the operation failed
+            #         (because the data was wrong or the block is already included into the chain)
+            return False
 
         # Reduce all blocks in last-blocks cache, that are over the last 100
         while len(self.last_blocks) > 100:
             # Remove the last block from the caching-list
             self.last_blocks.pop(len(self.last_blocks) - 1)
 
-        # Check if the data is wrong or the block already is included into the chain
-        if not success:
-            # TODO -> Check why the operation failed
-            #         (becuase the data was wrong or the block is already included into the chain)
-            return False
-
         return True
 
-    def fetch_block(self, index=None, tx: Transaction = None, address=None):
+    def fetch_block(self, index=None, tx: Transaction = None):
         """Fetch block from its index, from an included transaction or from a mentioned address.
 
         :param index: Index of the block.
         :type index: :py:class:`blockchain.Block.index`
         :param tx: Transaction contained in the block.
         :type tx: :py:class:`blockchain.Transaction`
-        :param address: Public key mentioned in the block to fetch.
-        :type address: str
 
         :return: Block to fetch or false whether the block could or could not be found.
         :rtype: :py:class:`blockchain.Block` | bool
@@ -212,9 +208,13 @@ class Blockchain:
             # Check if block is within the block cache
             if index > self.last_blocks[-1].index:
                 # Go through the cache and find the block
-                for block in self.last_blocks:
-                    if index == block.index:
-                        return block
+                block = [block if block.index == index else None for block in self.last_blocks]
+
+                if block:
+                    return block
+
+                else:
+                    log_error('Cache suffers from data loss')
 
             # If not in cache fetch it from the database
             block_dict = fetch_block(index)
@@ -236,9 +236,6 @@ class Blockchain:
             return block
 
         elif tx:
-            pass
-
-        elif address:
             pass
 
         return False
@@ -302,16 +299,8 @@ class Blockchain:
         """
 
         # Check if transaction is in block-cache
-        for block in reversed(self.last_blocks):
-            # Check if timestamp of the transaction is in the ratio
-            if tx.timestamp <= block.timestamp:
-                # TODO -> Improve cache searching (no for loop, the position can be calculated!)
-
-                # Go through blocks transactions
-                for transaction in block.tx:
-                    # Check if the transaction is the same
-                    if tx == transaction:
-                        return True
+        if any(tx in block.transactions for block in self.last_blocks):
+            return True
 
         # Check if transaction is in the database
         if fetch_transaction_block_index(tx):

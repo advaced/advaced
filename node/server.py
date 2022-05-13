@@ -16,7 +16,6 @@ path.insert(0, join(dirname(abspath(__file__)), '..'))
 # Project modules
 from blockchain.block import Block
 from blockchain.transaction import Transaction
-from blockchain.burn_transaction import BurnTransaction
 
 from accounts import Wallet
 
@@ -206,25 +205,6 @@ class Server:
             # Add the version to the version stamps
             self.blockchain.add_version_stamp(data['timestamp'], data['version'], data['network'], data['public_key'],
                                               data['signature'], db_q=self.database.db_q)
-        elif message['type'] == 'burn':
-            # Load json data
-            try:
-                data = json.loads(message['data'])
-            except json.decoder.JSONDecodeError:
-                return json.dumps({'success': False}).encode('utf-8'), False
-
-            # Fetch the burn transaction data from the dictionary
-            burn = BurnTransaction('', '', 0)
-            success = burn.from_dict(data)
-
-            # Check if the transaction was successfully created
-            if not success:
-                return json.dumps({'success': False}).encode('utf-8'), False
-
-            # Put the transaction into the input queue
-            self.processor_queue.put({'type': 'burn', 'data': burn})
-
-            return json.dumps({'success': True}).encode('utf-8'), True
 
         else:
             return json.dumps({'success': False}).encode('utf-8'), False

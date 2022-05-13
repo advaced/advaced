@@ -15,7 +15,7 @@ from os.path import dirname, abspath, join
 path.insert(0, join(dirname(abspath(__file__)), '..'))
 
 # Project modules
-from __init__ import OPTIONS, COMMANDS
+from __init__ import __version__, OPTIONS, COMMANDS
 
 from .help import print_help, print_cmd_help
 
@@ -83,8 +83,8 @@ def handle_input():
 
                         # Check if it is not a value
                         if (not is_option(argv[pos + 1]) and
-                            not is_command(argv[pos + 1]) and
-                            not is_command_option(argv[pos + 1])):
+                           not is_command(argv[pos + 1]) and
+                           not is_command_option(argv[pos + 1])):
                             # Add the argument behind this argument as the value
                             opt_values.append(argv[pos + 1])
 
@@ -119,16 +119,11 @@ def handle_input():
                 continue
 
             # Go through all the commands and check if this argument is one
-            for name, command in COMMANDS.items():
-
-                # Check if argument is this command
-                if (argument == (command['min'] if 'min' in command else None) or
-                   argument == (command['standard'] if 'standard' in command else None) or
-                   argument == (command['max'] if 'max' in command else None)):
-                    cmd = name
-                    found = True
-
-                    break
+            cmd, found = next(iter(name for name, command in COMMANDS.items()
+                                   if (argument == (command['min'] if 'min' in command else None) or
+                                       argument == (command['standard'] if 'standard' in command else None) or
+                                       argument == (command['max'] if 'max' in command else None))),
+                              (None, False))
 
             if found:
                 continue
@@ -158,7 +153,7 @@ def handle_input():
 
                         # Check if it is not a value
                         if (not is_option(argv[pos + 1]) and not is_command(argv[pos + 1]) and
-                            not is_command_option(argv[pos + 1])):
+                           not is_command_option(argv[pos + 1])):
                             if len(argv) <= pos + 1:
                                 break
 
@@ -331,8 +326,8 @@ def handle_input():
             print('--- Accounts ---')
 
             if type(account_names) is list:
-                for index, account_name in enumerate(account_names):
-                    print(str(index + 1) + ': ' + account_name[0] if type(account_name) is tuple else account_name)
+                iter(print(str(index + 1) + ': ' + account_name[0] if type(account_name) is tuple else account_name)
+                     for index, account_name in enumerate(account_names))
 
             else:
                 print(f'1: {account_names}')
@@ -454,35 +449,8 @@ def handle_input():
 
             print('Fetching required data...')
 
-            # Fetch a known node
-            nodes = Database.fetchall_from_db('SELECT ip_address, port FROM nodes_archive', {})
-
-            while True:
-                if not nodes:
-                    # TODO -> Search for nodes
-
-                    print('No nodes found')
-
-                    # Check if the user wants to use the advaced-org node
-                    if input('Use the advaced foundation node instead? (y/n): ').lower() == 'y':
-                        nodes = [('localhost', 87878)]
-
-                        # TODO -> Change ip address to advaced-org ip address
-
-                        # Save the node to the database
-                        Database.push_to_db('INSERT INTO nodes_archive (ip_address, port) VALUES (:ip, :port)',
-                                            {'ip': nodes[0][0], 'port': nodes[0][1]})
-
-                if type(nodes) == list:
-                    # Select a random node
-                    node = choice(nodes)
-
-                else:
-                    node = nodes
-
-                # Ask if the user wants to use the node
-                if input(f'Use node {node[0]}:{node[1]}? (y/n): ').lower() == 'y':
-                    break
+            # Fetch a node from user input
+            node = fetch_node()
 
             # Fetch current transaction fee
             client = Client(node[0], node[1])
@@ -688,8 +656,7 @@ def handle_input():
         pass
 
     elif cmd == 'version':
-        # TODO -> Print out the version of the protocol
-        pass
+        print(f'Advaced {__version__}')
 
     elif cmd == 'version-audit':
         # TODO -> Checks for newer versions and if this version has vulnerabilities or bugs
@@ -708,11 +675,11 @@ def is_option(value):
     :return: Is an option or not.
     :rtype: bool
     """
-    for _, option in OPTIONS.items():
-        if (value == (option['min'] if 'min' in option else None) or
-            value == (option['standard'] if 'standard' in option else None) or
-            value == (option['max'] if 'max' in option else None)):
-            return True
+    if any(value == (option['min'] if 'min' in option else None) or
+           value == (option['standard'] if 'standard' in option else None) or
+           value == (option['max'] if 'max' in option else None)
+           for _, option in OPTIONS.items()):
+        return True
 
     return False
 
@@ -726,11 +693,11 @@ def is_command(value):
     :return: Is an option or not.
     :rtype: bool
     """
-    for _, command in COMMANDS.items():
-        if (value == (command['min'] if 'min' in command else None) or
-            value == (command['standard'] if 'standard' in command else None) or
-            value == (command['max'] if 'max' in command else None)):
-            return True
+    if any(value == (command['min'] if 'min' in command else None) or
+           value == (command['standard'] if 'standard' in command else None) or
+           value == (command['max'] if 'max' in command else None)
+           for _, command in COMMANDS.items()):
+        return True
 
     return False
 
@@ -751,32 +718,15 @@ def is_command_option(value, command_name=None):
     if command_name:
         if 'cmd-opts' in COMMANDS[command_name]:
             # Go through all command options
-            for _, cmd_option in COMMANDS[command_name]['cmd-opts'].items():
-
-                # Check if the option is equal to the given value
-                if (value == (cmd_option['min'] if 'min' in cmd_option else None) or
+            if any(value == (cmd_option['min'] if 'min' in cmd_option else None) or
                    value == (cmd_option['standard'] if 'standard' in cmd_option else None) or
-                   value == (cmd_option['max'] if 'max' in cmd_option else None)):
-                    return True
+                   value == (cmd_option['max'] if 'max' in cmd_option else None)
+                   for _, cmd_option in COMMANDS[command_name]['cmd-opts'].items()):
+                return True
 
-        else:
-            # No command options were found
-            return False
-
-    else:
-        # Go through all commands
-        for name, command in COMMANDS.items():
-
-            # Check if any command options are provided
-            if 'cmd-opts' in COMMANDS[name]:
-                # Go through all options of the commands
-                for _, cmd_option in command['cmd-opts'].items():
-
-                    # Check if the option is equal to the given value
-                    if (value == (cmd_option['min'] if 'min' in cmd_option else None) or
-                        value == (cmd_option['standard'] if 'standard' in cmd_option else None) or
-                        value == (cmd_option['max'] if 'max' in cmd_option else None)):
-                        return True
+    # Go through all commands
+    elif any(is_command_option(value, command) for _, command in COMMANDS.items()):
+        return True
 
     return False
 

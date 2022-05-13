@@ -66,8 +66,7 @@ def print_help():
 
         # Add some space
         if 33 - len(option) > 0:
-            for x in range(0, round((36 - len(option)) / 8)):
-                option += '\t'
+            option += '\t' * (round(36 - len(option) / 8))
 
         # Add the description
         option += f'\t{opt["description"]}'
@@ -104,8 +103,7 @@ def print_help():
 
         # Add some space
         if 33 - len(command) > 0:
-            for x in range(0, round((37 - len(command)) / 8)):
-                command += '\t'
+            command += '\t' * (round(37 - len(command) / 8))
 
         # Add the description
         command += f'\t{cmd["description"]}'
@@ -175,8 +173,7 @@ def print_cmd_help(cmd):
 
         # Add some space
         if 33 - len(cmd_option) > 0:
-            for x in range(0, round((37 - len(cmd_option)) / 8)):
-                cmd_option += '\t'
+            cmd_option += '\t' * (round(37 - len(cmd_option) / 8))
 
         # Add the description
         cmd_option += f'\t{cmd_opt["description"]}'

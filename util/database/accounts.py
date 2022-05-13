@@ -10,10 +10,8 @@ def fetch_account(account_name, database=None):
     :param database: The database to use.
     :type database: :py:class:`database.Database`
 
-    :returns: The account-data in a dictionary.
-    :rtype: dict
-    :returns: False if the account does not exist.
-    :rtype: bool
+    :returns: The account data in a dictionary or False if no account is found.
+    :rtype: dict | bool
     """
     # Check if a database is given
     if database:

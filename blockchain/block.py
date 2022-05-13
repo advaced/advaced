@@ -2,6 +2,7 @@
 from hashlib import sha3_256
 
 from datetime import datetime, timezone
+from logging import basicConfig, info as log_info, error as log_error, warning as log_warning
 import json
 
 # Add to path
@@ -11,10 +12,14 @@ from os.path import dirname, abspath, join
 path.insert(0, join(dirname(abspath(__file__)), '..'))
 
 # Project modules
-from __init__ import __version__
+from __init__ import __version__, LOG_LEVEL
 from blockchain.transaction import Transaction
 from accounts import Wallet
 from util.database.blockchain import fetch_block
+from util.log.logger import init_logger
+
+handler = init_logger()
+basicConfig(level=LOG_LEVEL, handlers=[handler])
 
 
 class Block:
@@ -86,28 +91,23 @@ class Block:
         :rtype: list (contains dictionaries)
         """
 
-        # Add all transactions in json-format to a list
-        tx_list = []
-        for tx in self.tx:
-            tx_list.append(tx.to_dict())
-
-        return tx_list
+        return [tx.to_dict() for tx in self.tx]
 
     @property
-    def hash(self) -> str:
+    def hash(self) -> str | bool:
         """Calculates the hash of the block with the SHA3_256 hash-algorithm.
 
-        :return: Hex-digest of transaction-hash
-        :rtype: str (hex-digest)
+        :return: Hex-digest of transaction-hash or False if there is no validator.
+        :rtype: str | bool
         """
 
         # Check if the block contains an important value
         if not self.validator:
-            # Development logs
-            print("WARNING!: Block incomplete, hash is not completely right!")
+            log_error('No validator found in block.')
+            return False
 
         return sha3_256((str(self.index) + self.version + str(self.timestamp) + str(self.base_fee) + str(self.tx_dict)
-                         + (self.validator if self.validator else "")).encode()).hexdigest()
+                         + self.validator).encode()).hexdigest()
 
     def sign_block(self, private_key: str):
         """Signs the block with the private-key of the validators keypair (The validator must be set).
@@ -121,12 +121,8 @@ class Block:
         # Fetch the paired public-key
         public_key = Wallet.get_public_key(private_key)
 
-        # Check if private-key is valid
-        if not public_key:
-            return False
-
-        # Check if the public-key belongs to the validator
-        if not self.validator == public_key:
+        # Check if private-key is valid and if the public-key belongs to the validator
+        if not public_key or not self.validator == public_key:
             return False
 
         # Set signature
@@ -159,6 +155,8 @@ class Block:
             return True
 
         # Fetch the previous block
+        previous_block = blockchain.last_blocks[0]
+
         if in_chain:
             block_dict = blockchain.fetch_block(index=self.index - 1)
 
@@ -166,37 +164,28 @@ class Block:
                 previous_block = Block()
                 previous_block.from_dict(block_dict)
 
-        else:
-            previous_block = blockchain.last_blocks[0]
-
         # Check if they could fetch the previous-block
         if previous_block:
-            if not previous_block.index == 1:
-                # Check if the previous hash matches with the previous blocks hash
-                if not self.previous_hash == previous_block.hash:
-                    return False
-
-                # Compare the timestamps
-                if self.timestamp < previous_block.timestamp:
-                    # Previous block was generated after current block
-                    return False
-
-            else:
+            if previous_block.index == 1:
                 # TODO -> Check if previous block is the same as the genesis block
                 pass
+
+            else:
+                # Check if the previous hash matches with the previous blocks hash and compare the timestamps
+                if not self.previous_hash == previous_block.hash or self.timestamp < previous_block.timestamp:
+                    return False
 
         # Check if version exists
         if not blockchain.version_stamps[self.version]:
             return False
 
         # Check if version is allowed to use on this block
-        if datetime.strptime(blockchain.version_stamps[self.version], '%Y-%m-%d %H:%M:%S.%f').replace(
-            tzinfo=timezone.utc) > self.timestamp:
+        if (datetime.strptime(blockchain.version_stamps[self.version], '%Y-%m-%d %H:%M:%S.%f').replace(
+           tzinfo=timezone.utc) > self.timestamp):
             return False
 
-        # Check timestamp
+        # Check if the block is from the future
         if self.timestamp > datetime.now(timezone.utc) and in_chain:
-            # Block is from the future
             return False
 
         tx_len = 0
@@ -218,15 +207,16 @@ class Block:
             return False
 
         # Check if transactions are valid
-        for transaction in self.tx:
-            if not transaction.is_valid(blockchain, in_chain):
-                return False
+        if not all([transaction.is_valid(blockchain, in_chain) for transaction in self.tx]):
+            return False
 
         # Check if validators signature is valid
         if not Wallet.valid_signature(self.validator, self.signature, self.hash):
             return False
 
-        # TODO -> Add stake check (if the validator has staked enough to validate a block)
+        # Check if the validators stake is big enough
+        if not Wallet.stake(self.validator, blockchain, self.index - 1) >= 4_096:
+            return False
 
         return True
 
@@ -269,15 +259,12 @@ class Block:
         :rtype: bool
         """
         try:
-            # Reinitialize block from data
+            # Reinitialize block from data and check if it was successful
             self.index = block_dict['index']
             self.version = block_dict['version']
             self.base_fee = block_dict['base_fee']
 
-            success = self.from_tx_dict(block_dict['tx'])
-
-            # Check if transaction initialization was successful
-            if not success:
+            if not self.from_tx_dict(block_dict['tx']):
                 return False
 
             # Create datetime-object from string
@@ -317,12 +304,10 @@ class Block:
         # Set transactions class-list up
         tx_list = []
         for tx in tx_dict:
-            # Set transaction class up
-            new_tx = Transaction("", "", 0)
-            success = new_tx.from_dict(tx)
+            # Set transaction class up and check if it was successful
+            new_tx = Transaction('', '', 0)
 
-            # Check if something did not seem to work
-            if not success:
+            if not new_tx.from_dict(tx):
                 return False
 
             # Add to list
@@ -346,11 +331,8 @@ class Block:
             # Convert json to dictionary
             dict_data = json.loads(json_data)
 
-            # Assign dictionary-data to the class
-            success = self.from_dict(dict_data)
-
-            # Check if data initialization was successful
-            if not success:
+            # Assign dictionary data to the class and check if it was successful
+            if not self.from_dict(dict_data):
                 return False
 
         # Return the status

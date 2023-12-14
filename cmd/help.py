@@ -65,8 +65,8 @@ def print_help():
             return False
 
         # Add some space
-        if 33 - len(option) > 0:
-            option += '\t' * (round(36 - len(option) / 8))
+        if 36 - len(option) > 0:
+            option += '\t' * (round((37 - len(option)) / 8))
 
         # Add the description
         option += f'\t{opt["description"]}'
@@ -102,8 +102,8 @@ def print_help():
             command = 'Could not find the command!'
 
         # Add some space
-        if 33 - len(command) > 0:
-            command += '\t' * (round(37 - len(command) / 8))
+        if 36 - len(command) > 0:
+            command += '\t' * (round((37 - len(command)) / 8))
 
         # Add the description
         command += f'\t{cmd["description"]}'

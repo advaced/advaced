@@ -6,7 +6,7 @@ from os import getcwd
 import json
 
 # Error handling
-from .error import InvalidCommand, InvalidArgument, TooManyArguments, MissingArguments
+from .error import InvalidCommand, InvalidArgument, MissingArguments
 
 # Add to path
 from sys import path, argv
@@ -34,10 +34,10 @@ from util.database.database import Database
 def handle_input():
     """Handle the input and all its arguments
 
-    :raises: :py:class:`cmd.error.InvalidCommand`: If the command is invalid.
-    :raises: :py:class:`cmd.error.InvalidArgument`: If an argument doesn't exist
-    :raises: :py:class:`cmd.error.TooManyArguments`: If too many arguments are used
-    :raises: :py:class:`cmd.error.MissingArgument`: If an argument is missing
+    :raises: :py:class:`cmd.error.InvalidCommand` If the command is invalid.
+    :raises: :py:class:`cmd.error.InvalidArgument` If an argument doesn't exist
+    :raises: :py:class:`cmd.error.TooManyArguments` If too many arguments are used
+    :raises: :py:class:`cmd.error.MissingArgument` If an argument is missing
     """
 
     # Check if there are any arguments provided
@@ -119,14 +119,18 @@ def handle_input():
                 continue
 
             # Go through all the commands and check if this argument is one
-            cmd, found = next(iter(name for name, command in COMMANDS.items()
+            cmd = next(iter(name for name, command in COMMANDS.items()
                                    if (argument == (command['min'] if 'min' in command else None) or
                                        argument == (command['standard'] if 'standard' in command else None) or
                                        argument == (command['max'] if 'max' in command else None))),
                               (None, False))
-
-            if found:
+            
+            
+            if not cmd:
                 continue
+
+            else:
+                found = True
 
         elif argument == 'help' or argument == 'h' and not cmd_opt and cmd:
             cmd_opt = 'help'
